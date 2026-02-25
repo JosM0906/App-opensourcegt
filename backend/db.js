@@ -1,6 +1,6 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
-dotenv.config();
+// dotenv.config(); // Removed global config to prevent crashing on Railway
 
 const { Pool } = pg;
 
