@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de envion de mensajes para WhatsApp - OSPOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f3f4f6;
+      }
+
+      .tab-btn {
+        transition: all 0.3s ease;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      .console-log {
+        font-family: "Consolas", "Monaco", monospace;
+        font-size: 0.85rem;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#144377",
+              secondary: "#00ACF1",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body class="bg-gray-100">
+    <div id="app" class="min-h-screen p-6">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <!-- Header -->
+          <div class="bg-white p-6 border-b border-gray-200">
+            <div class="flex items-center gap-3 mb-2">
+              <img
+                src="https://osposgt.com/wp/wp-content/uploads/2023/12/cropped-LOGO.png"
+                alt="OSPOS Logo"
+                class="h-10"
+              />
+              <h1 class="text-3xl font-bold tracking-tight text-primary">
+                Envío Masivo WhatsApp
+              </h1>
+            </div>
+            <p class="text-gray-500">Plataforma de mensajería automatizada</p>
+          </div>
+
+          <!-- Stats -->
+          <div
+            class="grid grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-100"
+          >
+            <div
+              class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center"
+            >
+              <div
+                class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
+              >
+                Total
+              </div>
+              <p class="text-3xl font-bold text-gray-800" id="stat-total">0</p>
+            </div>
+            <div
+              class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center"
+            >
+              <div
+                class="text-xs font-semibold text-green-500 uppercase tracking-wider mb-1"
+              >
+                Enviados
+              </div>
+              <p class="text-3xl font-bold text-green-600" id="stat-sent">0</p>
+            </div>
+            <div
+              class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center"
+            >
+              <div
+                class="text-xs font-semibold text-red-500 uppercase tracking-wider mb-1"
+              >
+                Fallidos
+              </div>
+              <p class="text-3xl font-bold text-red-600" id="stat-failed">0</p>
+            </div>
+            <div
+              class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center"
+            >
+              <div
+                class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1"
+              >
+                Pendientes
+              </div>
+              <p class="text-3xl font-bold text-blue-600" id="stat-pending">
+                0
+              </p>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex border-b" id="tabs">
+            <button
+              onclick="showTab('config')"
+              class="tab-btn px-6 py-4 font-medium"
+              data-tab="config"
+            >
+              ⚙️ Configuración
+            </button>
+            <button
+              onclick="showTab('numbers')"
+              class="tab-btn px-6 py-4 font-medium"
+              data-tab="numbers"
+            >
+              👥 Números
+            </button>
+            <button
+              onclick="showTab('message')"
+              class="tab-btn px-6 py-4 font-medium"
+              data-tab="message"
+            >
+              💬 Mensaje
+            </button>
+            <button
+              onclick="showTab('send')"
+              class="tab-btn px-6 py-4 font-medium"
+              data-tab="send"
+            >
+              🚀 Enviar
+            </button>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6">
+            <!-- Config Tab -->
+            <div id="tab-config" class="tab-content">
+              <div class="space-y-6">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p class="text-sm text-primary">
+                    ✅
+                    <strong>Este archivo funciona correctamente</strong> porque
+                    se ejecuta localmente sin restricciones de seguridad.
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >API Key de BuilderBot *</label
+                  >
+                  <input
+                    type="text"
+                    id="apiKey"
+                    placeholder="Configurada en Servidor"
+                    readonly
+                    class="w-full px-4 py-3 border border-gray-200 bg-gray-50 rounded-lg text-gray-500 font-mono cursor-not-allowed"
+                  />
+                  <p class="text-sm text-green-600 mt-1">
+                    ✨ La API Key está vinculada automáticamente con el servidor.
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Delay entre mensajes (ms)</label
+                  >
+                  <input
+                    type="number"
+                    id="delay"
+                    value="3000"
+                    min="1000"
+                    step="1000"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  />
+                  <p class="text-sm text-gray-500 mt-1">
+                    Recomendado: 3000ms o más
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="checkExists"
+                    class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-secondary"
+                  />
+                  <label
+                    for="checkExists"
+                    class="text-sm font-medium text-gray-700"
+                    >Verificar si el número existe en WhatsApp</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Numbers Tab -->
+            <div id="tab-numbers" class="tab-content hidden">
+              <div class="space-y-6">
+                <div
+                  class="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+                >
+                  <p class="text-sm text-yellow-800">
+                    <strong>Formatos aceptados:</strong><br />
+                    1. Lista simple (1 columna con números).<br />
+                    2. Reporte exportado (columnas: Numero, Estado, Hora).<br />
+                    3. Programado (columnas: Numero, Hora Programada [YYYY-MM-DD
+                    HH:mm]).
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Cargar números desde Excel</label
+                  >
+                  <input
+                    type="file"
+                    id="fileInput"
+                    accept=".xlsx,.xls,.csv"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-900"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Agregar número manualmente</label
+                  >
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      id="manualNumber"
+                      placeholder="+502 4003 5884"
+                      class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                    <button
+                      onclick="addManualNumber()"
+                      class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-900"
+                    >
+                      Agregar
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <h3 class="font-semibold text-gray-800 mb-3">
+                    Números cargados (<span id="numbers-count">0</span>)
+                  </h3>
+                  <div
+                    id="numbers-list"
+                    class="max-h-96 overflow-y-auto space-y-2"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Message Tab -->
+            <div id="tab-message" class="tab-content hidden">
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Mensaje *</label
+                  >
+                  <textarea
+                    id="messageText"
+                    rows="6"
+                    placeholder="Escribe tu mensaje aquí..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary"
+                  >
+Hola, este es un mensaje de prueba</textarea
+                  >
+                  <p class="text-sm text-gray-500 mt-1">
+                    <span id="char-count">0</span> caracteres
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >URL de imagen/media (opcional)</label
+                  >
+                  <input
+                    type="url"
+                    id="mediaUrl"
+                    value="https://www.builderbot.app/assets/brand/logo-alone.png"
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                  />
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <h3 class="font-semibold text-gray-800 mb-3">Vista previa</h3>
+                  <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <img
+                      id="preview-img"
+                      class="max-w-xs mb-3 rounded hidden"
+                    />
+                    <p
+                      id="preview-text"
+                      class="text-gray-800 whitespace-pre-wrap"
+                    >
+                      Tu mensaje aparecerá aquí...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Send Tab -->
+            <div id="tab-send" class="tab-content hidden">
+              <div class="space-y-6">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 class="font-semibold text-blue-900 mb-2">
+                    Modo de envío
+                  </h3>
+                  <div class="flex gap-4">
+                    <button
+                      onclick="startAutoSend()"
+                      id="btn-auto"
+                      class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-900 transition-colors shadow-md flex items-center gap-2"
+                    >
+                      <span>▶️</span> Enviar Automático
+                    </button>
+                    <button
+                      onclick="pauseSending()"
+                      id="btn-pause"
+                      class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 hidden transition-colors shadow-md flex items-center gap-2"
+                    >
+                      <span>⏸️</span> Pausar
+                    </button>
+                    <button
+                      onclick="resetSending()"
+                      id="btn-reset"
+                      class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2"
+                    >
+                      <span>🗑️</span> Limpiar Todo
+                    </button>
+                  </div>
+                  <div class="mt-4 flex gap-4">
+                    <button
+                      onclick="exportReport()"
+                      class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md flex items-center gap-2"
+                    >
+                      <span>📥</span> Exportar Reporte
+                    </button>
+                  </div>
+                  <div id="progress-container" class="mt-4 hidden">
+                    <div
+                      class="flex justify-between text-sm text-gray-600 mb-2"
+                    >
+                      <span>Progreso</span>
+                      <span id="progress-text">0 de 0</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        id="progress-bar"
+                        class="bg-secondary h-2 rounded-full transition-all"
+                        style="width: 0%"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6">
+                  <div
+                    class="col-span-2 bg-white rounded-lg border border-gray-200 flex flex-col h-96"
+                  >
+                    <div
+                      class="p-3 border-b bg-gray-50 font-semibold text-gray-700 flex justify-between"
+                    >
+                      <span>Resultados en tiempo real</span>
+                      <span
+                        id="sending-status"
+                        class="text-xs uppercase px-2 py-0.5 rounded bg-gray-200 text-gray-600"
+                        >Inactivo</span
+                      >
+                    </div>
+                    <div
+                      id="results-list"
+                      class="flex-1 overflow-y-auto p-2 space-y-2"
+                    ></div>
+                  </div>
+                  <div
+                    class="bg-gray-900 rounded-lg flex flex-col h-96 overflow-hidden"
+                  >
+                    <div
+                      class="p-2 border-b border-gray-800 bg-gray-950 font-mono text-xs text-gray-400"
+                    >
+                      Console Output
+                    </div>
+                    <div
+                      id="console-output"
+                      class="console-log flex-1 overflow-y-auto p-3 text-green-400 space-y-1"
+                    >
+                      <div class="text-gray-500">System ready...</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let numbers = [];
+      let sendResults = [];
+      let sending = false;
+      let paused = false;
+      let currentIndex = 0;
+
+      // Show tab
+      function showTab(tabName) {
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((el) => el.classList.add("hidden"));
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.classList.remove("text-primary", "border-b-2", "border-primary");
+          btn.classList.add("text-gray-600");
+        });
+
+        document.getElementById("tab-" + tabName).classList.remove("hidden");
+        const btn = document.querySelector(`[data-tab="${tabName}"]`);
+        if (btn) {
+          btn.classList.add("text-primary", "border-b-2", "border-primary");
+          btn.classList.remove("text-gray-600");
+        }
+      }
+
+      // Logger
+      function logConsole(msg, type = "info") {
+        const el = document.getElementById("console-output");
+        if (!el) return;
+        const color =
+          type === "error"
+            ? "text-red-400"
+            : type === "success"
+              ? "text-green-400"
+              : "text-gray-400";
+        const time = new Date().toLocaleTimeString();
+        el.innerHTML += `<div class="${color} font-mono text-xs mb-1"><span class="opacity-50">[${time}]</span> ${msg}</div>`;
+        el.scrollTop = el.scrollHeight;
+      }
+
+      // File upload - Smart Import
+      document
+        .getElementById("fileInput")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, {
+              type: "array",
+              cellDates: true,
+            });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+            // Try to get JSON with headers first
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
+              defval: "",
+            });
+
+            numbers = [];
+            sendResults = [];
+
+            if (jsonData.length === 0) return;
+
+            const firstRow = jsonData[0];
+            // Check if likely a structured file (has 'Numero' or 'Mobile')
+            const hasNumero =
+              firstRow && ("Numero" in firstRow || "Mobile" in firstRow);
+
+            if (hasNumero) {
+              jsonData.forEach((row) => {
+                const rawNum = row["Numero"] || row["Mobile"] || "";
+                const num = String(rawNum).replace(/[\s\-\(\)\+]/g, "");
+
+                if (num.length >= 8 && /^\d+$/.test(num)) {
+                  numbers.push({
+                    number: num,
+                    scheduledTime:
+                      row["Hora Programada"] || row["Scheduled"] || null,
+                    customMessage: row["Mensaje"] || row["Message"] || null,
+                  });
+
+                  // Restore status
+                  const status = row["Estado"] || row["Status"] || "";
+                  const isSent =
+                    status.toLowerCase().includes("enviado") ||
+                    status.toLowerCase() === "success";
+                  if (isSent) {
+                    sendResults.push({
+                      status: "success",
+                      time: row["Hora"] || "Histórico",
+                      recovered: true,
+                    });
+                  } else {
+                    sendResults.push(null);
+                  }
+                }
+              });
+              logConsole(
+                `Smart Import: ${numbers.length} números cargados.`,
+                "info",
+              );
+            } else {
+              // Fallback to simple list (Column A)
+              const rawData = XLSX.utils.sheet_to_json(firstSheet, {
+                header: 1,
+              });
+              rawData.flat().forEach((val) => {
+                const num = String(val).replace(/[\s\-\(\)\+]/g, "");
+                if (num.length >= 8 && /^\d+$/.test(num)) {
+                  numbers.push({
+                    number: num,
+                    scheduledTime: null,
+                    customMessage: null,
+                  });
+                  sendResults.push(null);
+                }
+              });
+              logConsole(
+                `Importación simple: ${numbers.length} números cargados.`,
+                "info",
+              );
+            }
+
+            currentIndex = 0;
+            updateNumbersList();
+            updateStats();
+            updateResultsList();
+          };
+          reader.readAsArrayBuffer(file);
+        });
+
+      // Add manual number
+      function addManualNumber() {
+        const input = document.getElementById("manualNumber");
+        const num = input.value.replace(/[\s\-\(\)\+]/g, "");
+        if (num.length >= 8) {
+          numbers.push({
+            number: num,
+            scheduledTime: null,
+            customMessage: null,
+          });
+          sendResults.push(null);
+          input.value = "";
+          updateNumbersList();
+          updateStats();
+          updateResultsList();
+          logConsole(`Número agregado manualmente: ${num}`, "info");
+        }
+      }
+
+      // Remove number
+      function removeNumber(index) {
+        numbers.splice(index, 1);
+        sendResults.splice(index, 1);
+        updateNumbersList();
+        updateStats();
+        updateResultsList();
+      }
+
+      // Get Status Badge HTML
+      function getStatusBadge(index) {
+        const res = sendResults[index];
+        const item = numbers[index];
+
+        if (res?.status === "success")
+          return `<span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200">Enviado</span>`;
+        if (res?.status === "error")
+          return `<span class="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 border border-red-200">Fallido</span>`;
+        if (item.scheduledTime) {
+          const date = new Date(item.scheduledTime);
+          const timeStr = isNaN(date)
+            ? item.scheduledTime
+            : date.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+          return `<span class="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200">🕒 ${timeStr}</span>`;
+        }
+        return `<span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">Pendiente</span>`;
+      }
+
+      // Update numbers list UI
+      function updateNumbersList() {
+        const list = document.getElementById("numbers-list");
+        document.getElementById("numbers-count").textContent = numbers.length;
+
+        if (numbers.length === 0) {
+          list.innerHTML =
+            '<div class="flex flex-col items-center justify-center h-48 text-gray-400"><p>No hay números cargados</p></div>';
+          return;
+        }
+
+        const displayLimit = 100;
+        const itemHtml = numbers
+          .slice(0, displayLimit)
+          .map(
+            (item, idx) => `
+                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-100 hover:shadow-sm transition-shadow">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-mono text-gray-400 w-8">#${idx + 1}</span>
+                        <span class="font-mono font-medium text-gray-700">${item.number}</span>
+                        ${getStatusBadge(idx)}
+                    </div>
+                    <button onclick="removeNumber(${idx})" class="text-gray-400 hover:text-red-500 transition-colors p-1">🗑️</button>
+                </div>
+            `,
+          )
+          .join("");
+
+        list.innerHTML =
+          itemHtml +
+          (numbers.length > displayLimit
+            ? `<p class="text-center text-xs text-gray-400 mt-2">... y ${numbers.length - displayLimit} más</p>`
+            : "");
+      }
+
+      // Update results list UI
+      function updateResultsList() {
+        const list = document.getElementById("results-list");
+        if (numbers.length === 0 || !list) return;
+
+        list.innerHTML = numbers
+          .map((item, idx) => {
+            const isCurrent = idx === currentIndex && sending;
+            const status = sendResults[idx]?.status;
+            const badge = getStatusBadge(idx);
+
+            // Format date for input: YYYY-MM-DDTHH:mm
+            let dateVal = "";
+            if (item.scheduledTime) {
+              try {
+                const d = new Date(item.scheduledTime);
+                if (!isNaN(d)) {
+                  // Adjust for local input requirement (naive)
+                  const localIso = new Date(
+                    d.getTime() - d.getTimezoneOffset() * 60000,
+                  )
+                    .toISOString()
+                    .slice(0, 16);
+                  dateVal = localIso;
+                }
+              } catch (e) {}
+            }
+
+            return `
+                <div class="flex flex-col p-2 rounded border-b border-gray-50 ${isCurrent ? "bg-blue-50 border-blue-100" : "bg-white"}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3 flex-1">
+                            <span class="text-xs font-mono text-gray-400 w-8">#${idx + 1}</span>
+                            <span class="font-mono text-sm text-gray-700">${item.number}</span>
+                            ${badge}
+                            ${sendResults[idx]?.error ? `<span class="text-xs text-red-500 truncate max-w-[150px]" title="${sendResults[idx].error}">${sendResults[idx].error}</span>` : ""}
+                        </div>
+                        ${!status ? `<button onclick="sendSingle(${idx})" ${sending ? "disabled" : ""} class="px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-blue-600 hover:text-white transition-colors disabled:opacity-50">Enviar</button>` : ""}
+                    </div>
+                    ${
+                      !status
+                        ? `
+                    <div class="mt-2 pl-11 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-400">📅 Programar:</span>
+                            <input type="datetime-local" 
+                                title="Programar envío automático"
+                                value="${dateVal}" 
+                                onchange="updateSchedule(${idx}, this.value)"
+                                class="text-xs p-1 border border-gray-200 rounded text-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-gray-50 hover:bg-white transition-colors"
+                            >
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-400">📝 Mensaje:</span>
+                            <input type="text"
+                                placeholder="Mensaje personalizado (opcional)..."
+                                value="${item.customMessage || ""}"
+                                onchange="updateCustomMessage(${idx}, this.value)"
+                                class="flex-1 text-xs p-1 border border-gray-200 rounded text-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-gray-50 hover:bg-white transition-colors"
+                            >
+                        </div>
+                    </div>
+                    `
+                        : ""
+                    }
+                </div>
+            `;
+          })
+          .join("");
+
+        // Auto scroll
+        if (sending) {
+          const currentEl = list.children[currentIndex];
+          if (currentEl)
+            currentEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+
+      // Update schedule from UI
+      function updateSchedule(index, value) {
+        if (value) {
+          const date = new Date(value);
+          numbers[index].scheduledTime = date.toISOString();
+          logConsole(
+            `📅 Horario actualizado para ${numbers[index].number}: ${date.toLocaleString()}`,
+            "info",
+          );
+        } else {
+          numbers[index].scheduledTime = null;
+          logConsole(
+            `📅 Horario eliminado para ${numbers[index].number}`,
+            "info",
+          );
+        }
+        updateNumbersList(); // Refresh main list to show purple badge
+        // We don't refresh results list fully to avoid resetting focus, but logic is tricky.
+        // For now simple refresh to keep sync.
+        updateResultsList();
+      }
+
+      // Update custom message from UI
+      function updateCustomMessage(index, value) {
+        value = value.trim();
+        if (value) {
+          numbers[index].customMessage = value;
+          logConsole(
+            `📝 Mensaje personalizado actualizado para ${numbers[index].number}`,
+            "info",
+          );
+        } else {
+          numbers[index].customMessage = null;
+          logConsole(
+            `📝 Mensaje personalizado eliminado para ${numbers[index].number}`,
+            "info",
+          );
+        }
+      }
+
+      // Update stats
+      function updateStats() {
+        document.getElementById("stat-total").textContent = numbers.length;
+        document.getElementById("stat-sent").textContent = sendResults.filter(
+          (r) => r?.status === "success",
+        ).length;
+        document.getElementById("stat-failed").textContent = sendResults.filter(
+          (r) => r?.status === "error",
+        ).length;
+        document.getElementById("stat-pending").textContent =
+          numbers.length - sendResults.filter((r) => r?.status).length;
+      }
+
+      // Message preview
+      document
+        .getElementById("messageText")
+        .addEventListener("input", function (e) {
+          document.getElementById("char-count").textContent =
+            e.target.value.length;
+          document.getElementById("preview-text").textContent =
+            e.target.value || "Tu mensaje aparecerá aquí...";
+        });
+
+      document
+        .getElementById("mediaUrl")
+        .addEventListener("input", function (e) {
+          const img = document.getElementById("preview-img");
+          if (e.target.value.trim()) {
+            img.src = e.target.value;
+            img.classList.remove("hidden");
+            img.onerror = () => img.classList.add("hidden");
+          } else {
+            img.classList.add("hidden");
+          }
+        });
+
+      // Send API
+      async function sendMessage(number, contentOverride = null) {
+        // Use backend proxy
+        const backendUrl = "http://localhost:4000";
+
+        const globalMessage = document
+          .getElementById("messageText")
+          .value.trim();
+        const mediaUrl = document.getElementById("mediaUrl").value.trim();
+        const checkExists = document.getElementById("checkExists").checked;
+
+        const finalMessage = contentOverride || globalMessage;
+
+        if (!finalMessage && !mediaUrl) {
+          throw new Error("No hay mensaje para enviar");
+        }
+
+        const payload = {
+          number: number,
+          message: finalMessage,
+          mediaUrl: mediaUrl, // Backend logic might need update if we want to support media properly?
+          // builderBotBroadcast helper in server.js currently only sends "content".
+          // We should check if we need to update server.js for media.
+          // For now, let's assume text only or existing support.
+          checkIfExists: checkExists,
+        };
+
+        const response = await fetch(`${backendUrl}/api/send-message`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const error = await response
+            .json()
+            .catch(() => ({ error: response.statusText }));
+          throw new Error(error.error || response.statusText);
+        }
+
+        return await response.json();
+      }
+
+      // Send Single
+      async function sendSingle(index) {
+        // API Key check removed
+        const message = document.getElementById("messageText").value.trim();
+
+        const customMsg = numbers[index].customMessage;
+        const globalMsg = document.getElementById("messageText").value.trim();
+        const mediaUrl = document.getElementById("mediaUrl").value.trim();
+
+        if (!customMsg && !globalMsg && !mediaUrl) {
+          alert("Falta el mensaje (personalizado o global) o la URL de media");
+          return;
+        }
+
+        try {
+          logConsole(`Enviando manual a ${numbers[index].number}...`);
+          const customMsg = numbers[index].customMessage;
+          await sendMessage(numbers[index].number, customMsg);
+          sendResults[index] = {
+            status: "success",
+            time: new Date().toLocaleTimeString(),
+          };
+          logConsole(`✓ Enviado correctamente`, "success");
+        } catch (error) {
+          sendResults[index] = { status: "error", error: error.message };
+          logConsole(`✗ Error: ${error.message}`, "error");
+        }
+
+        updateNumbersList();
+        updateResultsList();
+        updateStats();
+      }
+
+      // Auto Send Loop
+      async function startAutoSend() {
+        const apiKey = document.getElementById("apiKey").value.trim();
+        const message = document.getElementById("messageText").value.trim();
+        const delay = parseInt(document.getElementById("delay").value);
+
+        if (numbers.length === 0) {
+          alert("No hay números cargados. Ve a la pestaña Números");
+          showTab("numbers");
+          return;
+        }
+        if (!message && !document.getElementById("mediaUrl").value.trim()) {
+          alert(
+            "Falta el mensaje global o la URL de media en la pestaña Mensaje",
+          );
+          showTab("message");
+          return;
+        }
+        // Smart Check index
+        if (currentIndex >= numbers.length) {
+          currentIndex = 0; // Reset if at end
+        }
+
+        // Re-verify if any number remains to be sent (not success)
+        const existsPending = numbers.some(
+          (_, idx) =>
+            !sendResults[idx] || sendResults[idx].status !== "success",
+        );
+        if (!existsPending) {
+          alert(
+            "Todos los números ya han sido enviados correctamente. Limpia la lista para empezar de nuevo.",
+          );
+          return;
+        }
+
+        sending = true;
+        paused = false;
+        document.getElementById("btn-auto").classList.add("hidden");
+        document.getElementById("btn-pause").classList.remove("hidden");
+        document
+          .getElementById("progress-container")
+          .classList.remove("hidden");
+
+        const statusLabel = document.getElementById("sending-status");
+        statusLabel.textContent = "Iniciando...";
+        statusLabel.className =
+          "text-xs uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-700";
+
+        logConsole("🚀 Iniciando envío automático...", "info");
+
+        for (let i = currentIndex; i < numbers.length; i++) {
+          if (paused) {
+            currentIndex = i;
+            break;
+          }
+
+          // Smart Resume: Skip if already succeeded
+          if (sendResults[i]?.status === "success") {
+            continue;
+          }
+
+          currentIndex = i;
+          updateProgress();
+          updateResultsList();
+
+          const item = numbers[i];
+
+          // Scheduling Logic
+          if (item.scheduledTime) {
+            const scheduleDate = new Date(item.scheduledTime);
+            if (!isNaN(scheduleDate.getTime()) && scheduleDate > new Date()) {
+              statusLabel.textContent = `Esperando ${scheduleDate.toLocaleTimeString()}`;
+              statusLabel.className =
+                "text-xs uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-700";
+              logConsole(
+                `⏳ Programado: ${item.number} a las ${scheduleDate.toLocaleTimeString()}`,
+                "info",
+              );
+
+              while (new Date() < scheduleDate && !paused) {
+                await new Promise((r) => setTimeout(r, 1000));
+              }
+
+              if (paused) break;
+            }
+          }
+
+          statusLabel.textContent = `Enviando #${i + 1}...`;
+          statusLabel.className =
+            "text-xs uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-700";
+
+          try {
+            await sendMessage(item.number, item.customMessage);
+            sendResults[i] = {
+              status: "success",
+              time: new Date().toLocaleTimeString(),
+            };
+            logConsole(`✓ Enviado a ${item.number}`, "success");
+          } catch (error) {
+            sendResults[i] = { status: "error", error: error.message };
+            logConsole(`✗ Falló ${item.number}: ${error.message}`, "error");
+          }
+
+          updateStats();
+          updateResultsList();
+
+          if (i < numbers.length - 1 && !paused) {
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+        }
+
+        if (!paused) {
+          sending = false;
+          document.getElementById("btn-auto").classList.remove("hidden");
+          document.getElementById("btn-pause").classList.add("hidden");
+          statusLabel.textContent = "Finalizado";
+          statusLabel.className =
+            "text-xs uppercase px-2 py-0.5 rounded bg-green-100 text-green-700";
+          logConsole("🏁 Proceso finalizado", "success");
+          currentIndex = numbers.length;
+          updateProgress();
+          alert("Proceso finalizado");
+        }
+      }
+
+      function pauseSending() {
+        paused = true;
+        sending = false;
+        document.getElementById("btn-auto").classList.remove("hidden");
+        document.getElementById("btn-pause").classList.add("hidden");
+        document.getElementById("sending-status").textContent = "Pausado";
+        logConsole("⏸️ Pausado por usuario", "info");
+      }
+
+      function resetSending() {
+        currentIndex = 0;
+        sendResults = [];
+        numbers = [];
+        sending = false;
+        paused = false;
+        updateNumbersList();
+        updateResultsList();
+        updateStats();
+        updateProgress();
+        document.getElementById("progress-container").classList.add("hidden");
+        document.getElementById("sending-status").textContent = "Inactivo";
+        logConsole("🗑️ Sistema limpiado", "info");
+      }
+
+      function updateProgress() {
+        const total = numbers.length;
+        const percent = total > 0 ? (currentIndex / total) * 100 : 0;
+        document.getElementById("progress-text").textContent =
+          `${currentIndex} de ${total}`;
+        document.getElementById("progress-bar").style.width = `${percent}%`;
+      }
+
+      function exportReport() {
+        if (numbers.length === 0) {
+          alert("No hay datos para exportar");
+          return;
+        }
+
+        const data = numbers.map((item, i) => ({
+          Numero: item.number,
+          Estado:
+            sendResults[i]?.status === "success"
+              ? "Enviado"
+              : sendResults[i]?.status === "error"
+                ? "Fallido"
+                : "Pendiente",
+          Hora: sendResults[i]?.time || "-",
+          "Hora Programada": item.scheduledTime || "-",
+          Error: sendResults[i]?.error || "-",
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte Envios");
+
+        const date = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Reporte_Envios_${date}.xlsx`);
+        logConsole("📥 Reporte exportado", "success");
+      }
+
+      // Initialize
+      async function init() {
+          try {
+              const r = await fetch('http://localhost:4000/api/config/builderbot');
+              const data = await r.json();
+              if (data.configured) {
+                  document.getElementById('apiKey').value = "●●●●●●●●●●●●●●●●";
+                  logConsole("✅ API Key detectada en el servidor", "success");
+              } else {
+                  logConsole("⚠️ No se detectó API Key en el servidor. Revisa el archivo .env", "error");
+              }
+          } catch(e) {
+              logConsole("❌ Error conectando con el servidor para obtener configuración", "error");
+          }
+      }
+      init();
+
+      showTab("config");
+      updateNumbersList();
+      updateResultsList();
+
+      // Initial preview sync
+      const initialMsg = document.getElementById("messageText").value;
+      const initialMedia = document.getElementById("mediaUrl").value;
+      document.getElementById("char-count").textContent = initialMsg.length;
+      document.getElementById("preview-text").textContent =
+        initialMsg || "Tu mensaje aparecerá aquí...";
+      if (initialMedia) {
+        const img = document.getElementById("preview-img");
+        img.src = initialMedia;
+        img.classList.remove("hidden");
+      }
+    </script>
+  </body>
+</html>

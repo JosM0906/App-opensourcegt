@@ -1,0 +1,241 @@
+{
+  "campaigns": [
+    {
+      "id": "cmp_8d511e5213c0e8_1771353171357",
+      "name": "prueba final",
+      "message": "este es un mensaje de prueba",
+      "scheduledAt": "2026-02-17T18:34:00.000Z",
+      "delayMs": 2500,
+      "numbers": [
+        "50250177374"
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-17T18:32:51.357Z",
+      "updatedAt": "2026-02-17T18:34:14.531Z",
+      "attempts": 1,
+      "lastAttemptAt": "2026-02-17T18:34:11.517Z",
+      "stats": {
+        "sent": 1,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_c3208625fb77f8_1771371206567",
+      "name": "prueba 2",
+      "message": "mensaje de prueba",
+      "scheduledAt": "2026-02-17T23:35:00.000Z",
+      "delayMs": 2500,
+      "numbers": [
+        "50250177374"
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-17T23:33:26.567Z",
+      "updatedAt": "2026-02-17T23:35:23.404Z",
+      "attempts": 1,
+      "lastAttemptAt": "2026-02-17T23:35:20.026Z",
+      "stats": {
+        "sent": 1,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_e219588c9f855_1771466388547",
+      "name": "prueba",
+      "message": "pueba",
+      "scheduledAt": "2026-02-19T02:00:00.000Z",
+      "delayMs": 2500,
+      "numbers": [
+        "50250177374"
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-19T01:59:48.547Z",
+      "updatedAt": "2026-02-19T02:00:33.457Z",
+      "attempts": 1,
+      "lastAttemptAt": "2026-02-19T02:00:30.472Z",
+      "stats": {
+        "sent": 1,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_f45897a3b81828_1771474091217",
+      "name": "jsomary",
+      "message": "campaña de prueba",
+      "scheduledAt": "2026-02-19T04:09:00.000Z",
+      "delayMs": 2500,
+      "numbers": [
+        "50250177374"
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-19T04:08:11.217Z",
+      "updatedAt": "2026-02-19T04:09:34.002Z",
+      "attempts": 1,
+      "lastAttemptAt": "2026-02-19T04:09:30.478Z",
+      "stats": {
+        "sent": 1,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_963b222ea40088_1771958550440",
+      "name": "campaña martes",
+      "message": "hola hoy es martes tenemos buenas ofertas",
+      "scheduledAt": "2026-02-24T18:43:00.000Z",
+      "delayMs": 2500,
+      "numbers": [
+        "50250177374"
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-24T18:42:30.440Z",
+      "updatedAt": "2026-02-24T18:43:34.685Z",
+      "attempts": 1,
+      "lastAttemptAt": "2026-02-24T18:43:31.262Z",
+      "stats": {
+        "sent": 1,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_4d8f5853cd5a88_1771958631873",
+      "name": "prueba",
+      "message": "mensaje de prueba",
+      "scheduledAt": "2026-02-28T18:45:00.000Z",
+      "delayMs": 2500,
+      "numbers": [
+        "50250177374"
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-24T18:43:51.873Z",
+      "updatedAt": "2026-02-24T19:12:09.997Z",
+      "attempts": 1,
+      "lastAttemptAt": "2026-02-24T19:12:05.829Z",
+      "stats": {
+        "sent": 1,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_8a7819b78b46c8_1771961243909",
+      "name": "campaña",
+      "message": "prueba de campaña personalizada",
+      "isCustom": true,
+      "delayMs": 2500,
+      "numbers": [
+        {
+          "phone": "50250177374",
+          "scheduledAt": "2026-02-24T14:31",
+          "status": "sent",
+          "attempts": 1
+        },
+        {
+          "phone": "50240035884",
+          "scheduledAt": "2026-02-24T14:32",
+          "status": "sent",
+          "attempts": 1
+        }
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-24T19:27:23.909Z",
+      "updatedAt": "2026-02-24T19:35:42.222Z",
+      "attempts": 1,
+      "lastAttemptAt": "2026-02-24T19:35:36.418Z",
+      "stats": {
+        "sent": 2,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_660bf6d431f898_1771962328236",
+      "name": "campaña 2",
+      "message": "prueba de campaña personalizada",
+      "isCustom": true,
+      "delayMs": 2500,
+      "numbers": [
+        {
+          "phone": "50250177374",
+          "scheduledAt": "2026-02-24T14:47",
+          "status": "sent",
+          "attempts": 1
+        },
+        {
+          "phone": "50247403412",
+          "scheduledAt": "2026-02-24T14:48",
+          "status": "sent",
+          "attempts": 1
+        },
+        {
+          "phone": "50242890628",
+          "scheduledAt": "2026-02-24T14:48",
+          "status": "sent",
+          "attempts": 1
+        },
+        {
+          "phone": "50247567120",
+          "scheduledAt": "2026-02-24T14:49",
+          "status": "sent",
+          "attempts": 1
+        },
+        {
+          "phone": "50238116008",
+          "scheduledAt": "2026-02-24T14:50",
+          "status": "sent",
+          "attempts": 1
+        }
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-24T19:45:28.236Z",
+      "updatedAt": "2026-02-24T19:48:40.312Z",
+      "attempts": 1,
+      "lastAttemptAt": "2026-02-24T19:48:21.236Z",
+      "stats": {
+        "sent": 5,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_6602bd87be4c1_1771963081687",
+      "name": "campaña 3",
+      "message": "prueba de campaña personalizada",
+      "isCustom": true,
+      "delayMs": 2500,
+      "numbers": [
+        {
+          "phone": "50250177374",
+          "scheduledAt": "2026-02-24T13:59",
+          "status": "sent",
+          "attempts": 1
+        },
+        {
+          "phone": "50247567120",
+          "scheduledAt": "2026-02-24T14:00",
+          "status": "sent",
+          "attempts": 1
+        }
+      ],
+      "status": "sent",
+      "createdAt": "2026-02-24T19:58:01.687Z",
+      "updatedAt": "2026-02-24T20:00:32.849Z",
+      "attempts": 0,
+      "lastAttemptAt": "2026-02-24T20:00:29.490Z",
+      "stats": {
+        "sent": 2,
+        "failed": 0
+      }
+    },
+    {
+      "id": "cmp_6ed9cfef3b3408_1771964670529",
+      "name": "prueba",
+      "message": "mensaje de prueba",
+      "isCustom": false,
+      "scheduledAt": "2026-02-26T20:30:00.000Z",
+      "delayMs": 2500,
+      "numbers": [
+        "50250177374"
+      ],
+      "status": "scheduled",
+      "createdAt": "2026-02-24T20:24:30.529Z",
+      "updatedAt": "2026-02-24T23:15:38.340Z",
+      "attempts": 0
+    }
+  ]
+}
