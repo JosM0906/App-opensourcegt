@@ -28,3 +28,17 @@ backend/node_modules/
 *.sw?
 
 
+# Datos generados / temporales
+backend/data/catalog.json
+backend/data/catalog.backup.json
+backend/data/images/
+backend/data/logs.json
+backend/data/orders.json
+backend/data/events.json
+backend/logs.json
+backend/order.json
+backend/tunnels.json
+
+# Debug outputs
+backend/debug-output.json
+backend/test_media_results.json
