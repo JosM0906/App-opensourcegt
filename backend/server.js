@@ -6,6 +6,7 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import fsp from "fs/promises";
+import pool from "./db.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import multer from "multer";
 import { createRequire } from "node:module";
