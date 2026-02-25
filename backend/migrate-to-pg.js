@@ -123,7 +123,10 @@ async function migrateData() {
     // 3. Migrate Campaigns
     const campaignsPath = path.join(DATA_DIR, 'campaigns.json');
     if (fs.existsSync(campaignsPath)) {
-      const campaigns = JSON.parse(fs.readFileSync(campaignsPath, 'utf8'));
+      let campaigns = JSON.parse(fs.readFileSync(campaignsPath, 'utf8'));
+      if (campaigns && campaigns.campaigns && Array.isArray(campaigns.campaigns)) {
+        campaigns = campaigns.campaigns;
+      }
       for (const c of campaigns) {
         await client.query(
           `INSERT INTO campaigns (id, name, message, media_url, is_custom, scheduled_at, delay_ms, numbers, status, created_at, updated_at, last_attempt_at, attempts, stats_sent, stats_failed)
