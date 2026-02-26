@@ -751,52 +751,76 @@ app.post("/mensaje", async (req, res) => {
 
     console.log(`[POST /mensaje] Received text: "${text}"`);
     console.log(`[POST /mensaje] Context Catalog Size: ${aiCatalog.length} items`);
-    const modelNames = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
-    let model;
-    let resMsg;
+    const modelPriorities = [
+      process.env.GEMINI_MODEL || "gemini-1.5-flash",
+      "gemini-1.5-flash-latest",
+      "gemini-2.0-flash",
+      "gemini-pro"
+    ];
 
-    // Use a simpler approach: try gemini-1.5-flash first, then gemini-pro
+    let session = null;
+    let lastError = null;
+
     const tryModel = async (name) => {
-        try {
-            console.log(`[POST /mensaje] Trying model: ${name}`);
-            const m = ai.getGenerativeModel({
-                model: name,
-                systemInstruction: await loadSystemPrompt()
-            });
-            const chat = m.startChat({
-                history: formattedHistory,
-                tools: [{ functionDeclarations: [searchCatalogFunction, recordOrderFunction] }]
-            });
-            const result = await chat.sendMessage(text);
-            return { model: m, chat, result };
-        } catch (e) {
-            console.warn(`[POST /mensaje] Model ${name} failed:`, e.message);
-            // Log to a file we can see
-            try { fs.appendFileSync(path.join(DATA_DIR, "ai_debug.log"), `[${new Date().toISOString()}] Model ${name} failed: ${e.stack || e.message}\n`); } catch(ez) {}
-            return null;
-        }
+      try {
+        console.log(`[POST /mensaje] Intentando modelo: ${name}`);
+        const m = ai.getGenerativeModel({
+          model: name,
+          systemInstruction: await loadSystemPrompt()
+        });
+        const chat = m.startChat({
+          history: formattedHistory,
+          tools: [{ functionDeclarations: [searchCatalogFunction, recordOrderFunction] }]
+        });
+        const result = await chat.sendMessage(text);
+        return { model: m, chat, result };
+      } catch (e) {
+        console.warn(`[POST /mensaje] El modelo ${name} falló:`, e.message);
+        
+        // Log detallado del error
+        try { 
+          fs.appendFileSync(path.join(DATA_DIR, "ai_debug.log"), 
+          `[${new Date().toISOString()}] Modelo ${name} Error: ${e.message}\n`
+          ); 
+        } catch(ez) {}
+        
+        return { error: e };
+      }
     };
 
-    const configModel = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-    let session = await tryModel(configModel);
-    
-    if (!session && configModel !== "gemini-1.5-flash") {
-        session = await tryModel("gemini-1.5-flash");
+    for (const modelName of modelPriorities) {
+      const resTry = await tryModel(modelName);
+      if (resTry.model) {
+        session = resTry;
+        break;
+      } else {
+        lastError = resTry.error;
+        // Si es un error de cuota (429), no sigas intentando otros modelos, fallará igual.
+        if (String(lastError.message).includes("429") || String(lastError.message).includes("quota")) {
+          console.error("[POST /mensaje] ERROR DE CUOTA DETECTADO. Deteniendo intentos.");
+          break;
+        }
+      }
     }
-    if (!session) session = await tryModel("gemini-1.5-flash-latest");
-    if (!session) session = await tryModel("gemini-pro");
-    if (!session) session = await tryModel("gemini-2.0-flash");
 
     if (!session) {
-        throw new Error(`No se pudo conectar con ningún modelo de Gemini (Probamos: ${configModel}, 1.5-flash, 2.0-flash, pro). Verifica tu API Key.`);
+      const errorMsg = String(lastError?.message || "Desconocido");
+      let userFriendlyError = "Error conectando con Gemini.";
+      
+      if (errorMsg.includes("429") || errorMsg.includes("quota")) {
+        userFriendlyError = "❌ ERROR DE CUOTA: Se han agotado las peticiones gratuitas de tu API Key de Gemini. Debes revisar tu plan en Google AI Studio.";
+      } else if (errorMsg.includes("403")) {
+        userFriendlyError = "❌ ERROR DE ACCESO: Tu API Key no tiene permisos o es inválida.";
+      } else if (errorMsg.includes("404")) {
+        userFriendlyError = "❌ ERROR DE MODELO: El modelo de IA solicitado no se encuentra o no es compatible.";
+      }
+      
+      return res.status(500).json({ error: userFriendlyError, debug: errorMsg });
     }
 
-    model = session.model;
-    const chat = session.chat;
-    let result = session.result;
+    const { model, chat, result } = session;
     let response = result.response;
-
-    console.log("[POST /mensaje] AI response received from:", model.model);
+    console.log("[POST /mensaje] Respuesta de IA recibida desde:", model.model);
 
     const maxToolTurns = 5;
     for (let i = 0; i < maxToolTurns; i++) {

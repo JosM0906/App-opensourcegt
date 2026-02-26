@@ -47,7 +47,6 @@ export class CatalogMiddlewareService {
   }
 
   async generateResponse(text: string, catalog: Product[]): Promise<string> {
-    // Fallback simple generation
     try {
       const response = await this.ai.models.generateContent({
         model: 'gemini-1.5-flash',
@@ -55,10 +54,14 @@ export class CatalogMiddlewareService {
       });
       const responseText = 
         response?.candidates?.[0]?.content?.parts?.[0]?.text || 
-        "";
+        "No se recibió respuesta del modelo.";
       return responseText;
-    } catch (e) {
-      return "Error generating response.";
+    } catch (e: any) {
+      const msg = String(e?.message || "");
+      if (msg.includes("429") || msg.includes("quota")) {
+        return "❌ ERROR DE CUOTA (Local): Se han agotado las peticiones de tu API Key. Revisa Google AI Studio.";
+      }
+      return `Error generando respuesta local: ${msg}`;
     }
   }
 }
