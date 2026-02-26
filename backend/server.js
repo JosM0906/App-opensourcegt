@@ -151,12 +151,18 @@ let logs = [];
 async function loadLogs() {
   try {
     const res = await pool.query('SELECT * FROM logs ORDER BY timestamp DESC LIMIT 1000');
+    
+    function cleanNum(str) {
+      if (typeof str !== 'string') return str;
+      return str.replace(/[{}"']/g, '');
+    }
+    
     logs = res.rows.map(r => ({
-      at: r.timestamp.toISOString(),
-      phone: r.phone,
-      number: r.number,
+      at: r.timestamp ? r.timestamp.toISOString() : null,
+      phone: cleanNum(r.phone),
+      number: cleanNum(r.number),
       name: r.name,
-      type: r.role === 'user' ? 'in' : 'out',
+      type: (r.text_in || r.role === 'user') ? 'in' : 'out',
       role: r.role,
       text_in: r.text_in,
       text_out: r.text_out,
