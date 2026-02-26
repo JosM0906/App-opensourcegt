@@ -751,6 +751,9 @@ app.post("/mensaje", async (req, res) => {
 
     console.log(`[POST /mensaje] Received text: "${text}"`);
     console.log(`[POST /mensaje] Context Catalog Size: ${aiCatalog.length} items`);
+    // Log simple para confirmar que la petición llega
+    try { fs.appendFileSync(path.join(DATA_DIR, "ai_debug.log"), `[${new Date().toISOString()}] Incoming /mensaje: "${text.slice(0,30)}..."\n`); } catch(e) {}
+
     const modelPriorities = [
       process.env.GEMINI_MODEL || "gemini-1.5-flash",
       "gemini-1.5-flash-latest",
@@ -768,16 +771,19 @@ app.post("/mensaje", async (req, res) => {
           model: name,
           systemInstruction: await loadSystemPrompt()
         });
+        
+        // Temporariamente desactivamos tools si sospechamos que rompen la respuesta
         const chat = m.startChat({
-          history: formattedHistory,
-          tools: [{ functionDeclarations: [searchCatalogFunction, recordOrderFunction] }]
+          history: formattedHistory
+          // tools: [{ functionDeclarations: [searchCatalogFunction, recordOrderFunction] }]
         });
+        
         const result = await chat.sendMessage(text);
         return { model: m, chat, result };
       } catch (e) {
         console.warn(`[POST /mensaje] El modelo ${name} falló:`, e.message);
+        lastError = e;
         
-        // Log detallado del error
         try { 
           fs.appendFileSync(path.join(DATA_DIR, "ai_debug.log"), 
           `[${new Date().toISOString()}] Modelo ${name} Error: ${e.message}\n`
@@ -794,10 +800,8 @@ app.post("/mensaje", async (req, res) => {
         session = resTry;
         break;
       } else {
-        lastError = resTry.error;
-        // Si es un error de cuota (429), no sigas intentando otros modelos, fallará igual.
-        if (String(lastError.message).includes("429") || String(lastError.message).includes("quota")) {
-          console.error("[POST /mensaje] ERROR DE CUOTA DETECTADO. Deteniendo intentos.");
+        // Si es un error de cuota (429), no sigas intentando otros modelos
+        if (String(lastError?.message).includes("429") || String(lastError?.message).includes("quota")) {
           break;
         }
       }
@@ -805,55 +809,32 @@ app.post("/mensaje", async (req, res) => {
 
     if (!session) {
       const errorMsg = String(lastError?.message || "Desconocido");
-      let userFriendlyError = "Error conectando con Gemini.";
+      let userFriendlyError = "Lo siento, mi servicio de IA está experimentando problemas.";
       
       if (errorMsg.includes("429") || errorMsg.includes("quota")) {
-        userFriendlyError = "❌ ERROR DE CUOTA: Se han agotado las peticiones gratuitas de tu API Key de Gemini. Debes revisar tu plan en Google AI Studio.";
+        userFriendlyError = "❌ ERROR DE CUOTA: Se han agotado las peticiones gratuitas diarias de Gemini. Por favor, revisa tu plan en Google AI Studio.";
       } else if (errorMsg.includes("403")) {
-        userFriendlyError = "❌ ERROR DE ACCESO: Tu API Key no tiene permisos o es inválida.";
-      } else if (errorMsg.includes("404")) {
-        userFriendlyError = "❌ ERROR DE MODELO: El modelo de IA solicitado no se encuentra o no es compatible.";
+        userFriendlyError = "❌ ERROR DE ACCESO: El API Key de Gemini es inválida o no tiene permisos.";
       }
       
-      return res.status(500).json({ error: userFriendlyError, debug: errorMsg });
+      // Devolvemos 200 OK con el error como 'reply' para que el bot responda el error en lugar de quedar en silencio
+      return res.json({ reply: userFriendlyError, text: userFriendlyError, error: errorMsg });
     }
 
-    const { model, chat, result } = session;
+    const { model, result } = session;
     let response = result.response;
-    console.log("[POST /mensaje] Respuesta de IA recibida desde:", model.model);
-
-    const maxToolTurns = 5;
-    for (let i = 0; i < maxToolTurns; i++) {
-      const call = response.candidates?.[0]?.content?.parts?.find(p => p.functionCall);
-      
-      if (!call) {
-        console.log("[POST /mensaje] No tool calls, breaking loop");
-        break;
-      }
-
-      const { name, args } = call.functionCall;
-      console.log(`[POST /mensaje] Calling tool: ${name} with args:`, args);
-
-      let toolResult;
-      if (name === "searchCatalog") {
-        toolResult = await handleSearchCatalog(args, aiCatalog);
-      } else if (name === "recordOrder") {
-        toolResult = await handleRecordOrder(args);
-      } else {
-        toolResult = { error: "Unknown tool" };
-      }
-
-      console.log(`[POST /mensaje] Tool ${name} finished, sending back to AI...`);
-      result = await chat.sendMessage([{
-        functionResponse: {
-          name: name,
-          response: toolResult
-        }
-      }]);
-      response = result.response;
+    
+    // Extraer texto de forma segura
+    let out = "No se recibió una respuesta legible.";
+    try {
+        out = response.text().trim();
+    } catch (e) {
+        console.warn("[POST /mensaje] Error al extraer texto (posiblemente una función):", e.message);
+        // Si no hay texto, buscamos si hay una llamada a función aunque las hayamos desactivado arriba (por si acaso)
+        const parts = response.candidates?.[0]?.content?.parts || [];
+        const textPart = parts.find(p => p.text);
+        if (textPart) out = textPart.text.trim();
     }
-
-    const out = response.text().trim();
 
     logs.unshift({
       at: new Date().toISOString(),
@@ -865,8 +846,10 @@ app.post("/mensaje", async (req, res) => {
 
     return res.json({ reply: out, text: out });
   } catch (err) {
-    console.error("Error en /mensaje:", err);
-    return res.status(500).json({ error: "Error procesando el mensaje: " + err.message });
+    console.error("Error crítico en /mensaje:", err);
+    try { fs.appendFileSync(path.join(DATA_DIR, "ai_debug.log"), `[${new Date().toISOString()}] Error crítico: ${err.message}\n`); } catch(e) {}
+    // Siempre 200 OK para evitar que el bot muera en el middleware
+    return res.json({ reply: "Error interno: " + err.message, text: "Error" });
   }
 });
 
