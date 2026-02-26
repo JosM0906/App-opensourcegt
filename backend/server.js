@@ -772,10 +772,9 @@ app.post("/mensaje", async (req, res) => {
           systemInstruction: await loadSystemPrompt()
         });
         
-        // Temporariamente desactivamos tools si sospechamos que rompen la respuesta
         const chat = m.startChat({
-          history: formattedHistory
-          // tools: [{ functionDeclarations: [searchCatalogFunction, recordOrderFunction] }]
+          history: formattedHistory,
+          tools: [{ functionDeclarations: [searchCatalogFunction, recordOrderFunction] }]
         });
         
         const result = await chat.sendMessage(text);
@@ -783,13 +782,6 @@ app.post("/mensaje", async (req, res) => {
       } catch (e) {
         console.warn(`[POST /mensaje] El modelo ${name} falló:`, e.message);
         lastError = e;
-        
-        try { 
-          fs.appendFileSync(path.join(DATA_DIR, "ai_debug.log"), 
-          `[${new Date().toISOString()}] Modelo ${name} Error: ${e.message}\n`
-          ); 
-        } catch(ez) {}
-        
         return { error: e };
       }
     };
@@ -800,7 +792,6 @@ app.post("/mensaje", async (req, res) => {
         session = resTry;
         break;
       } else {
-        // Si es un error de cuota (429), no sigas intentando otros modelos
         if (String(lastError?.message).includes("429") || String(lastError?.message).includes("quota")) {
           break;
         }
@@ -809,38 +800,47 @@ app.post("/mensaje", async (req, res) => {
 
     if (!session) {
       const errorMsg = String(lastError?.message || "Desconocido");
-      let userFriendlyError = "Lo siento, mi servicio de IA está experimentando problemas.";
+      let userFriendlyError = "Lo siento, el servicio de IA no está disponible en este momento.";
       
       if (errorMsg.includes("429") || errorMsg.includes("quota")) {
-        userFriendlyError = "❌ ERROR DE CUOTA: Se han agotado las peticiones gratuitas diarias de Gemini. Por favor, revisa tu plan en Google AI Studio.";
-      } else if (errorMsg.includes("403")) {
-        userFriendlyError = "❌ ERROR DE ACCESO: El API Key de Gemini es inválida o no tiene permisos.";
+        userFriendlyError = "❌ Error de Cuota: Se alcanzó el límite de la API.";
       }
       
-      // Devolvemos 200 OK con el error como 'reply' para que el bot responda el error en lugar de quedar en silencio
       return res.json({ reply: userFriendlyError, text: userFriendlyError, error: errorMsg });
     }
 
-    const { model, result } = session;
+    const { model, chat, result: initialResult } = session;
+    let result = initialResult;
     let response = result.response;
     
-    // Extraer texto de forma segura
+    // Proceso de Tools (Importante para que el bot conteste sobre el catálogo)
+    const maxToolTurns = 5;
+    for (let i = 0; i < maxToolTurns; i++) {
+        const call = response.candidates?.[0]?.content?.parts?.find(p => p.functionCall);
+        if (!call) break;
+
+        const { name, args } = call.functionCall;
+        console.log(`[POST /mensaje] Herramienta detectada: ${name}`);
+
+        let toolResult;
+        if (name === "searchCatalog") toolResult = handleSearchCatalog(args, aiCatalog);
+        else if (name === "recordOrder") toolResult = await handleRecordOrder(args);
+        else toolResult = { error: "Unknown tool" };
+
+        result = await chat.sendMessage([{ functionResponse: { name, response: toolResult } }]);
+        response = result.response;
+    }
+
     let out = "No se recibió una respuesta legible.";
     try {
         out = response.text().trim();
     } catch (e) {
-        console.warn("[POST /mensaje] Error al extraer texto (posiblemente una función):", e.message);
-        // Si no hay texto, buscamos si hay una llamada a función aunque las hayamos desactivado arriba (por si acaso)
         const parts = response.candidates?.[0]?.content?.parts || [];
         const textPart = parts.find(p => p.text);
         if (textPart) out = textPart.text.trim();
     }
 
-    logs.unshift({
-      at: new Date().toISOString(),
-      text_in: text,
-      text_out: out,
-    });
+    logs.unshift({ at: new Date().toISOString(), text_in: text, text_out: out });
     if (logs.length > 200) logs.pop();
     await saveLogs();
 
