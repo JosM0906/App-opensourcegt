@@ -56,11 +56,12 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
         {/* Year Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold text-[#0B1F3A]">
+            <h2 className="text-3xl sm:text-2xl font-bold text-[#0B1F3A]">
               {year}
             </h2>
           </div>
-          <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 p-1">
+          {/* Ocultamos los controles en móvil, solo los mostramos en pantallas sm en adelante */}
+          <div className="hidden sm:flex items-center rounded-xl bg-slate-50 border border-slate-200 p-1">
              <button onClick={prevYear} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all">
                <ChevronLeft className="w-5 h-5 text-slate-600" />
              </button>
@@ -73,8 +74,8 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
           </div>
         </div>
         
-        {/* Year Grid */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 sm:p-6 grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-10 custom-scrollbar">
+        {/* Year Grid: 2 columnas en movil, 4 en tablet/desktop */}
+        <div className="flex-1 overflow-y-auto px-4 py-6 sm:p-6 grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-10 custom-scrollbar">
           {months.map(mIndex => {
             const mDaysInMonth = getDaysInMonth(year, mIndex);
             const mFirstDay = getFirstDayOfMonth(year, mIndex);
@@ -94,11 +95,11 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                   setViewMode('month');
                 }}
               >
-                <h3 className="text-[13px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-1 sm:mb-3 pl-1">
+                <h3 className="text-[14px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-2 sm:mb-3 pl-1">
                   {monthNamesShort[mIndex]}
                 </h3>
                 {/* Grid de días en vista anual sin las letras de la semana para una vista limpia */}
-                <div className="grid grid-cols-7 gap-y-[2px] gap-x-[2px] text-center text-[9px] sm:text-xs font-medium text-slate-800">
+                <div className="grid grid-cols-7 gap-y-[4px] gap-x-[2px] text-center text-[10px] sm:text-xs font-medium text-slate-700">
                   {mDays.map((d, i) => {
                     if (!d) return <div key={i} />;
                     const isToday = d.toDateString() === new Date().toDateString();
@@ -106,14 +107,14 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                     const hasCampaigns = campaignsByDate[dateStr] && campaignsByDate[dateStr].length > 0;
                     
                     return (
-                      <div key={i} className="relative flex justify-center items-center h-[18px] w-[18px] sm:h-8 sm:w-8 mx-auto">
+                      <div key={i} className="relative flex justify-center items-center h-[20px] w-[20px] sm:h-8 sm:w-8 mx-auto">
                         <span className={`w-full h-full flex items-center justify-center rounded-full leading-none
                           ${isToday ? 'bg-[#0B1F3A] text-white font-bold shadow-sm' : ''}
                         `}>
                           {d.getDate()}
                         </span>
                         {hasCampaigns && (
-                           <div className={`absolute -bottom-[2px] w-[3px] h-[3px] sm:w-1 sm:h-1 rounded-full ${isToday ? 'bg-[#0B1F3A]' : 'bg-slate-400'}`}></div>
+                           <div className={`absolute -bottom-[2px] w-[3px] h-[3px] sm:w-[5px] sm:h-[5px] rounded-full ${isToday ? 'bg-white' : 'bg-slate-300'}`}></div>
                         )}
                       </div>
                     )

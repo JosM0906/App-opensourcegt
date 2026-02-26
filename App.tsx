@@ -112,7 +112,7 @@ function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: st
         <div className="text-xl font-semibold text-slate-900">{title}</div>
         {subtitle ? <div className="mt-1 text-sm text-slate-600">{subtitle}</div> : null}
       </div>
-      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">{actions}</div> : null}
     </div>
   );
 }
@@ -1843,26 +1843,26 @@ export default function App() {
                 title="Campañas"
                 subtitle="Crea, programa y dispara campañas. El envío automático se ejecuta desde /cron/tick."
                 actions={
-                  <>
+                  <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 w-full sm:w-auto">
                     <button
                       onClick={tickCron}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      className="col-span-1 inline-flex items-center justify-center gap-1 sm:gap-2 rounded-2xl border border-slate-200 bg-white px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50"
                     >
-                      <Play className="h-4 w-4" /> Ejecutar tick
+                      <Play className="h-3 w-3 sm:h-4 sm:w-4" /> Ejecutar tick
                     </button>
                     <button
                       onClick={openCreateCampaign}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-[#0B1F3A] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0A1A31]"
+                      className="col-span-1 inline-flex items-center justify-center gap-1 sm:gap-2 rounded-2xl bg-[#0B1F3A] px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-[#0A1A31]"
                     >
-                      <Plus className="h-4 w-4" /> Nueva campaña
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" /> Nueva
                     </button>
                     <button
                       onClick={openCustomCampaign}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-[#0B1F3A] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0A1A31]"
+                      className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1 sm:gap-2 rounded-2xl bg-[#0B1F3A] px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-[#0A1A31]"
                     >
-                      <Plus className="h-4 w-4" /> Campaña personalizada
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" /> Personalizada
                     </button>
-                  </>
+                  </div>
                 }
               />
 
