@@ -8,12 +8,12 @@ type LogItem = {
 };
 
 export default function LogsPanel() {
-  const backend = String(import.meta.env.VITE_BACKEND_URL || "");
+  const backend = String(import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? "" : "http://localhost:4000"));
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const backendOk = useMemo(() => Boolean(backend), [backend]);
+  const backendOk = true;
 
   async function load() {
     try {
