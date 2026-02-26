@@ -1,0 +1,104 @@
+{
+  "totalConversations": 3,
+  "totalOrders": 6,
+  "revenue": 1752,
+  "avgReplyMin": 0,
+  "chartBars": [
+    {
+      "day": "Jue",
+      "orders": 0
+    },
+    {
+      "day": "Vie",
+      "orders": 0
+    },
+    {
+      "day": "Sáb",
+      "orders": 0
+    },
+    {
+      "day": "Dom",
+      "orders": 0
+    },
+    {
+      "day": "Lun",
+      "orders": 0
+    },
+    {
+      "day": "Mar",
+      "orders": 0
+    },
+    {
+      "day": "Mié",
+      "orders": 0
+    }
+  ],
+  "chartLine": [
+    {
+      "day": "Jue",
+      "leads": 1
+    },
+    {
+      "day": "Vie",
+      "leads": 1
+    },
+    {
+      "day": "Sáb",
+      "leads": 0
+    },
+    {
+      "day": "Dom",
+      "leads": 0
+    },
+    {
+      "day": "Lun",
+      "leads": 0
+    },
+    {
+      "day": "Mar",
+      "leads": 1
+    },
+    {
+      "day": "Mié",
+      "leads": 0
+    }
+  ],
+  "interactions": {
+    "manual_messages": 24,
+    "catalog_updates": 1,
+    "pdf_uploads": 3,
+    "campaigns_created": 9,
+    "recent": [
+      {
+        "id": 37,
+        "type": "manual_message_sent",
+        "timestamp": "2026-02-25T00:49:37.113Z",
+        "metadata": {}
+      },
+      {
+        "id": 36,
+        "type": "manual_message_sent",
+        "timestamp": "2026-02-24T23:42:01.993Z",
+        "metadata": {}
+      },
+      {
+        "id": 35,
+        "type": "manual_message_sent",
+        "timestamp": "2026-02-24T21:17:40.001Z",
+        "metadata": {}
+      },
+      {
+        "id": 34,
+        "type": "campaign_create",
+        "timestamp": "2026-02-24T20:24:30.534Z",
+        "metadata": {}
+      },
+      {
+        "id": 33,
+        "type": "manual_message_sent",
+        "timestamp": "2026-02-24T20:00:30.344Z",
+        "metadata": {}
+      }
+    ]
+  }
+}
