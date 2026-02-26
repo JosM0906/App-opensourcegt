@@ -899,7 +899,11 @@ async function loadCampaigns() {
   try {
     const res = await pool.query('SELECT * FROM campaigns ORDER BY created_at DESC');
     return res.rows.map(r => ({
-      ...r,
+      id: r.id,
+      name: r.name,
+      message: r.message,
+      status: r.status,
+      attempts: r.attempts,
       mediaUrl: r.media_url,
       isCustom: r.is_custom,
       scheduledAt: r.scheduled_at ? r.scheduled_at.toISOString() : null,
@@ -1252,6 +1256,7 @@ async function runCampaignsTick() {
             message: c.message,
             numbers: numsToBroadcast,
             delayMs: c.delayMs,
+            mediaUrl: c.mediaUrl
           });
 
           dueNumbers.forEach(n => {
@@ -1299,6 +1304,7 @@ async function runCampaignsTick() {
           message: c.message,
           numbers: c.numbers,
           delayMs: c.delayMs,
+          mediaUrl: c.mediaUrl
         });
 
         c.status = "sent";
