@@ -999,7 +999,13 @@ async function builderBotBroadcast({ campaignId, message, numbers, delayMs, medi
       // but some documentation suggests 'message' or arrays. 
       // Our diagnostic test 200 OK'd { messages: { content } }.
       
-      console.log(`[BuilderBot] Sending to ${number}:`, JSON.stringify(payload, null, 2));
+      if (!number) {
+        console.error(`[BuilderBot] Empty number in broadcast for campaign ${campaignId}`);
+        failedCount++;
+        continue;
+      }
+
+      console.log(`[BuilderBot] Sending to ${number} (Campaign: ${campaignId}):`, JSON.stringify(payload, null, 2));
 
       const r = await fetch(url, {
         method: "POST",
@@ -1007,7 +1013,7 @@ async function builderBotBroadcast({ campaignId, message, numbers, delayMs, medi
         body: JSON.stringify(payload),
       });
 
-      trackEvent("manual_message_sent", { number, hasMedia: !!mediaUrl });
+      trackEvent("manual_message_sent", { number, campaignId, hasMedia: !!mediaUrl });
 
       const txt = await r.text().catch(() => "");
       console.log(`[BuilderBot] Response from ${number}: ${r.status} ${txt}`);
@@ -1019,7 +1025,7 @@ async function builderBotBroadcast({ campaignId, message, numbers, delayMs, medi
         sent++;
       }
     } catch (e) {
-      console.error(`[BuilderBot] Exception sending to ${number}:`, e);
+      console.error(`[BuilderBot] Exception sending to ${number} for campaign ${campaignId}:`, e);
       failedCount++;
     }
 
@@ -1078,7 +1084,7 @@ app.post("/campaigns", async (req, res) => {
     finalNumbers = rawNums
       .map(n => ({
         phone: normalizeGtNumber(n.phone),
-        scheduledAt: String(n.scheduledAtLocal || ""),
+        scheduledAt: String(n.scheduledAt || n.scheduledAtLocal || ""),
         status: "scheduled",
         attempts: 0
       }))
@@ -1197,30 +1203,65 @@ app.post("/campaigns/:id/run", async (req, res) => {
     await saveCampaigns(campaigns);
 
     let numsToBroadcast = [];
+    const now = Date.now();
+
     if (c.isCustom) {
-      numsToBroadcast = c.numbers.map(n => n.phone);
+      // Respect schedules even when manually triggered
+      const dueNumbers = (c.numbers || []).filter(n => 
+        n.status !== "sent" && 
+        n.status !== "failed" && 
+        n.scheduledAt && 
+        new Date(n.scheduledAt).getTime() <= now
+      );
+      
+      if (dueNumbers.length === 0) {
+        return res.json({ ok: true, message: "No hay números programados para este momento." });
+      }
+      
+      numsToBroadcast = dueNumbers.map(n => n.phone);
+      
+      const result = await builderBotBroadcast({
+        campaignId: c.id,
+        message: c.message,
+        numbers: numsToBroadcast,
+        delayMs: c.delayMs,
+        mediaUrl: c.mediaUrl
+      });
+
+      dueNumbers.forEach(n => { 
+        n.status = "sent"; 
+        n.attempts = (n.attempts || 0) + 1; 
+        n.lastAttemptAt = nowIso();
+      });
+
+      c.stats = c.stats || { sent: 0, failed: 0 };
+      c.stats.sent = (c.stats.sent || 0) + (result?.sent || 0);
+      c.stats.failed = (c.stats.failed || 0) + (result?.failedCount || 0);
+
+      if (c.numbers.every(n => n.status === "sent" || n.status === "failed")) {
+        c.status = "sent";
+      }
+      
+      c.updatedAt = nowIso();
+      await saveCampaigns(campaigns);
+      return res.json({ ok: true, result });
     } else {
+      // Standard campaign behavior...
       numsToBroadcast = c.numbers;
+      const result = await builderBotBroadcast({
+        campaignId: c.id,
+        message: c.message,
+        numbers: numsToBroadcast,
+        delayMs: c.delayMs,
+        mediaUrl: c.mediaUrl
+      });
+
+      c.status = "sent";
+      c.stats = { sent: result?.sent ?? undefined, failed: result?.failedCount ?? undefined };
+      c.updatedAt = nowIso();
+      await saveCampaigns(campaigns);
+      return res.json({ ok: true, result });
     }
-
-    const result = await builderBotBroadcast({
-      campaignId: c.id,
-      message: c.message,
-      numbers: numsToBroadcast,
-      delayMs: c.delayMs,
-      mediaUrl: c.mediaUrl
-    });
-
-    if (c.isCustom) {
-      c.numbers.forEach(n => { n.status = "sent"; n.attempts = (n.attempts || 0) + 1; });
-    }
-
-    c.status = "sent";
-    c.stats = { sent: result?.sent ?? undefined, failed: result?.failedCount ?? undefined };
-    c.updatedAt = nowIso();
-    await saveCampaigns(campaigns);
-
-    res.json({ ok: true, result });
   } catch (e) {
     c.status = "failed";
     if (c.isCustom) {
@@ -1245,8 +1286,8 @@ async function runCampaignsTick() {
       const dueNumbers = c.numbers.filter(n => n.status !== "sent" && n.status !== "failed" && n.scheduledAt && new Date(n.scheduledAt).getTime() <= now);
       if (dueNumbers.length > 0) {
         try {
-          console.log(`[Campaign Custom] Executing ${c.id} - ${dueNumbers.length} numbers`);
           const numsToBroadcast = dueNumbers.map(n => n.phone);
+          console.log(`[Campaign Custom] Executing ${c.id} - ${c.name} for ${numsToBroadcast.length} numbers`);
           
           c.lastAttemptAt = nowIso();
           c.updatedAt = nowIso();
@@ -1263,6 +1304,7 @@ async function runCampaignsTick() {
           dueNumbers.forEach(n => {
              n.status = "sent";
              n.attempts = (n.attempts || 0) + 1;
+             n.lastAttemptAt = nowIso();
           });
 
           c.stats = c.stats || { sent: 0, failed: 0 };
@@ -1272,14 +1314,16 @@ async function runCampaignsTick() {
           if (c.numbers.every(n => n.status === "sent" || n.status === "failed")) {
             c.status = "sent";
           }
+          console.log(`[Campaign Custom] Finished ${c.id}: sent ${result?.sent}, failed ${result?.failedCount}`);
           c.updatedAt = nowIso();
           processed++;
           await saveCampaigns(campaigns);
         } catch (e) {
-          console.error(`[Campaign Custom] Failed ${c.id}:`, e);
+          console.error(`[Campaign Custom] Critical Failure ${c.id}:`, e);
           dueNumbers.forEach(n => {
              n.status = "failed";
              n.attempts = (n.attempts || 0) + 1;
+             n.lastError = e.message;
           });
           if (c.numbers.every(n => n.status === "sent" || n.status === "failed")) {
             c.status = "failed";

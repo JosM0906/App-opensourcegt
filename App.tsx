@@ -833,11 +833,24 @@ export default function App() {
       setCustomFormMediaUrl(c.mediaUrl || "");
       
       const numsList = (c.numbers || []).map((n: any) => {
-         if (typeof n === "string") return { id: Math.random().toString(), phone: n, scheduledAtLocal: "" };
+         const phone = typeof n === "string" ? n : n.phone;
+         const rawDate = typeof n === "string" ? "" : (n.scheduledAt || "");
+         
+         let localStr = "";
+         if (rawDate) {
+            try {
+              const d = new Date(rawDate);
+              const pad = (v: number) => String(v).padStart(2, '0');
+              localStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            } catch {
+              localStr = rawDate;
+            }
+         }
+
          return {
-            id: Math.random().toString(),
-            phone: n.phone,
-            scheduledAtLocal: n.scheduledAt || ""
+            id: Math.random().toString(36).substring(7),
+            phone,
+            scheduledAtLocal: localStr
          };
       });
       setCustomNumbersList(numsList);
@@ -998,22 +1011,39 @@ export default function App() {
     try {
       setCampLoading(true);
       setCampError("");
+      
+      // Convert entries to server format
+      const formattedNumbers = customNumbersList.map(n => ({
+        phone: n.phone,
+        scheduledAt: n.scheduledAtLocal ? new Date(n.scheduledAtLocal).toISOString() : null,
+        status: "scheduled",
+        attempts: 0
+      })).filter(n => n.scheduledAt);
+
+      if (formattedNumbers.length === 0) {
+        throw new Error("Todas las fechas deben ser válidas.");
+      }
+
       const payload = { 
         name: customFormName.trim(), 
         message: customFormMessage.trim(), 
         mediaUrl: customFormMediaUrl,
-        numbers: customNumbersList, 
+        numbers: formattedNumbers, 
         delayMs: customFormDelayMs,
         isCustom: true
       };
       
-      const r = await fetch(`${backend}/campaigns`, {
-        method: "POST",
+      const url = editing ? `${backend}/campaigns/${editing.id}` : `${backend}/campaigns`;
+      const method = editing ? "PUT" : "POST";
+
+      const r = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
         body: JSON.stringify(payload),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       setCustomCampFormOpen(false);
+      setEditing(null);
       await loadCampaigns();
     } catch (e: any) {
        setCampError(e?.message || "Error guardando campaña personalizada");
