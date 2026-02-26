@@ -1060,7 +1060,10 @@ export default function App() {
       setCampLoading(true);
       setCampError("");
       const r = await fetch(`${backend}/campaigns/${id}/run`, { method: "POST", headers: { "ngrok-skip-browser-warning": "true" } });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${r.status}`);
+      }
       await loadCampaigns();
     } catch (e: any) {
       setCampError(e?.message || "Error ejecutando campaña");
@@ -1112,7 +1115,10 @@ export default function App() {
       setCampLoading(true);
       setCampError("");
       const r = await fetch(`${backend}/cron/tick`, { headers: { "ngrok-skip-browser-warning": "true" } });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${r.status}`);
+      }
       await loadCampaigns();
     } catch (e: any) {
       setCampError(e?.message || "Error en cron tick");
