@@ -74,7 +74,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
         </div>
         
         {/* Year Grid */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-10 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-4 py-6 sm:p-6 grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-10 custom-scrollbar">
           {months.map(mIndex => {
             const mDaysInMonth = getDaysInMonth(year, mIndex);
             const mFirstDay = getFirstDayOfMonth(year, mIndex);
@@ -83,22 +83,23 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
             for (let i = 0; i < mFirstDay; i++) mDays.push(null);
             for (let i = 1; i <= mDaysInMonth; i++) mDays.push(new Date(year, mIndex, i));
 
+            // Nombres cortos de meses para la vista anual
+            const monthNamesShort = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
             return (
               <div 
                 key={mIndex} 
-                className="cursor-pointer group flex flex-col hover:bg-slate-50 rounded-2xl p-3 -mx-3 -my-3 transition-colors" 
+                className="cursor-pointer group flex flex-col hover:bg-slate-50 transition-colors" 
                 onClick={() => {
                   setCurrentDate(new Date(year, mIndex, 1));
                   setViewMode('month');
                 }}
               >
-                <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-[#0B1F3A] transition-colors">
-                  {monthNames[mIndex]}
+                <h3 className="text-[13px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-1 sm:mb-3 pl-1">
+                  {monthNamesShort[mIndex]}
                 </h3>
-                <div className="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 mb-2">
-                  {dayLabels.map((d, i) => <div key={i}>{d}</div>)}
-                </div>
-                <div className="grid grid-cols-7 gap-y-1 gap-x-1 text-center text-xs font-semibold">
+                {/* Grid de días en vista anual sin las letras de la semana para emular iOS */}
+                <div className="grid grid-cols-7 gap-y-[2px] gap-x-[2px] text-center text-[9px] sm:text-xs font-medium text-slate-800">
                   {mDays.map((d, i) => {
                     if (!d) return <div key={i} />;
                     const isToday = d.toDateString() === new Date().toDateString();
@@ -106,14 +107,14 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                     const hasCampaigns = campaignsByDate[dateStr] && campaignsByDate[dateStr].length > 0;
                     
                     return (
-                      <div key={i} className="relative flex justify-center items-center h-8 w-8 mx-auto">
-                        <span className={`w-full h-full flex items-center justify-center rounded-full
-                          ${isToday ? 'bg-[#0B1F3A] text-white font-bold shadow-sm' : 'text-slate-700 hover:bg-slate-200'}
+                      <div key={i} className="relative flex justify-center items-center h-[18px] w-[18px] sm:h-8 sm:w-8 mx-auto">
+                        <span className={`w-full h-full flex items-center justify-center rounded-full leading-none
+                          ${isToday ? 'bg-[#0B1F3A] text-white font-bold shadow-sm' : ''}
                         `}>
                           {d.getDate()}
                         </span>
                         {hasCampaigns && (
-                           <div className={`absolute bottom-0.5 w-1.5 h-1.5 rounded-full ${isToday ? 'bg-white' : 'bg-slate-400'}`}></div>
+                           <div className={`absolute -bottom-[2px] w-[3px] h-[3px] sm:w-1 sm:h-1 rounded-full ${isToday ? 'bg-[#0B1F3A]' : 'bg-slate-400'}`}></div>
                         )}
                       </div>
                     )
