@@ -90,8 +90,9 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
       {/* Grid Header */}
       <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
-          <div key={day} className="py-2 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            {day}
+          <div key={day} className="py-2 text-center text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <span className="md:hidden">{day.slice(0,1)}</span>
+            <span className="hidden md:inline">{day}</span>
           </div>
         ))}
       </div>
@@ -116,14 +117,14 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
             >
               <div className="flex justify-between items-start mb-1">
                 <span className={`
-                  text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full
+                  text-xs sm:text-sm font-semibold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full
                   ${isToday ? 'bg-blue-600 text-white' : 'text-slate-700'}
                 `}>
                   {date.getDate()}
                 </span>
                 <div className="flex items-center gap-1">
                   {dayCampaigns.length > 0 && (
-                    <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md hidden group-hover:block transition-all">
+                    <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-100 px-1 sm:px-1.5 py-0.5 rounded transition-all">
                       {(() => {
                         let totalDay = 0;
                         let sentDay = 0;
@@ -135,9 +136,6 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                       })()}
                     </span>
                   )}
-                  <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-blue-100 text-blue-600 rounded-full transition-all">
-                    <Plus className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
 
@@ -161,7 +159,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                       key={c.id}
                       onClick={(e) => { e.stopPropagation(); onEditCampaign(c); }}
                       className={`
-                        group/item flex items-center justify-between text-xs px-2 py-1.5 rounded-md border cursor-pointer transition-all hover:shadow-sm
+                        group/item flex items-center justify-between text-[9px] sm:text-xs px-1 sm:px-2 py-1 sm:py-1.5 rounded-md border cursor-pointer transition-all hover:shadow-sm
                         ${c.status === 'completed' || c.status === 'sent' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 
                           c.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' :
                           c.status === 'paused' ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' :
@@ -169,12 +167,12 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                       `}
                       title={c.name + ' - ' + c.message}
                     >
-                      <span className="truncate pr-2 font-medium">{titleText}</span>
+                      <span className="truncate pr-1 font-medium">{titleText}</span>
                       <div className={`
-                        shrink-0 flex items-center justify-center text-[10px] font-bold rounded
-                        ${isCompleted ? 'bg-emerald-200/50 text-emerald-800 w-5 h-5' : 'bg-white/60 text-current opacity-90 px-1.5 py-0.5'}
+                        shrink-0 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded
+                        ${isCompleted ? 'bg-emerald-200/50 text-emerald-800 w-4 h-4 sm:w-5 sm:h-5' : 'bg-white/60 text-current opacity-90 px-1 sm:px-1.5 py-0.5'}
                       `}>
-                        {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : <span>{sentNums}/{totalNums}</span>}
+                        {isCompleted ? <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <span>{sentNums}/{totalNums}</span>}
                       </div>
                     </div>
                   );

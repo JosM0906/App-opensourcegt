@@ -88,14 +88,14 @@ export default function LogsPanel() {
               {logs.map((l, idx) => (
                 <div key={idx} className="p-4">
                   <div className="text-xs text-slate-500">{new Date(l.at).toLocaleString()}</div>
-                  <div className="mt-2 grid gap-3 md:grid-cols-2">
-                    <div className="rounded-xl bg-slate-50 p-3">
-                      <div className="text-xs font-semibold text-slate-700">IN</div>
-                      <div className="mt-1 whitespace-pre-wrap text-sm text-slate-800">{l.text_in}</div>
+                  <div className="mt-2 grid gap-2 md:gap-3 md:grid-cols-2">
+                    <div className="rounded-xl bg-slate-50 p-2 sm:p-3 border border-slate-100">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Entrada (IN)</div>
+                      <div className="mt-1 whitespace-pre-wrap text-sm text-slate-800 leading-relaxed">{l.text_in}</div>
                     </div>
-                    <div className="rounded-xl bg-slate-50 p-3">
-                      <div className="text-xs font-semibold text-slate-700">OUT</div>
-                      <div className="mt-1 whitespace-pre-wrap text-sm text-slate-800">{l.text_out}</div>
+                    <div className="rounded-xl bg-slate-50 p-2 sm:p-3 border border-slate-100">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Respuesta (OUT)</div>
+                      <div className="mt-1 whitespace-pre-wrap text-sm text-slate-800 leading-relaxed">{l.text_out}</div>
                     </div>
                   </div>
                 </div>
