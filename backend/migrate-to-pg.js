@@ -147,12 +147,15 @@ async function migrateData() {
     // 4. Migrate Logs
     const logsPath = path.join(__dirname, 'logs.json');
     if (fs.existsSync(logsPath)) {
-      const logs = JSON.parse(fs.readFileSync(logsPath, 'utf8'));
+      let logs = JSON.parse(fs.readFileSync(logsPath, 'utf8'));
+      if (logs && !Array.isArray(logs)) {
+        logs = logs.logs || Object.values(logs).find(Array.isArray) || [];
+      }
       for (const l of logs) {
         await client.query(
           `INSERT INTO logs (phone, number, name, message, role, timestamp, text_in, text_out)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [l.phone, l.number, l.name, l.message, l.role, new Date(l.timestamp), l.text_in, l.text_out]
+          [l.phone, l.number, l.name, l.message, l.role, new Date(l.at || l.timestamp || Date.now()), l.text_in, l.text_out]
         );
       }
       console.log(`Migrated ${logs.length} logs.`);
@@ -161,7 +164,10 @@ async function migrateData() {
     // 5. Migrate Events
     const eventsPath = path.join(DATA_DIR, 'events.json');
     if (fs.existsSync(eventsPath)) {
-      const events = JSON.parse(fs.readFileSync(eventsPath, 'utf8'));
+      let events = JSON.parse(fs.readFileSync(eventsPath, 'utf8'));
+      if (events && !Array.isArray(events)) {
+        events = events.events || Object.values(events).find(Array.isArray) || [];
+      }
       for (const e of events) {
         await client.query(
           `INSERT INTO events (type, timestamp, metadata)

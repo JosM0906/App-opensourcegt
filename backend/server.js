@@ -600,10 +600,7 @@ app.get("/debug/pdfparse", (_req, res) => {
 // ============================
 //  Health + Logs
 // ============================
-app.get("/", (_req, res) => {
-  res.json({ ok: true, service: "catalog-middleware-bridge" });
-});
-
+// Removed root handler to allow frontend to serve at /
 app.get("/logs", (_req, res) => {
   res.json({ logs });
 });
@@ -1660,6 +1657,18 @@ app.post("/api/orders", async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// ============================
+//  Serve Frontend in Production
+// ============================
+const distPath = path.join(__dirname, "..", "dist");
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+}
+
 
 app.listen(PORT, () => {
   console.log(`Backend listo en http://localhost:${PORT}`);
