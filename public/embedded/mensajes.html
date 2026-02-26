@@ -178,7 +178,8 @@
                     class="w-full px-4 py-3 border border-gray-200 bg-gray-50 rounded-lg text-gray-500 font-mono cursor-not-allowed"
                   />
                   <p class="text-sm text-green-600 mt-1">
-                    ✨ La API Key está vinculada automáticamente con el servidor.
+                    ✨ La API Key está vinculada automáticamente con el
+                    servidor.
                   </p>
                 </div>
 
@@ -427,6 +428,12 @@ Hola, este es un mensaje de prueba</textarea
       let sending = false;
       let paused = false;
       let currentIndex = 0;
+
+      // Extract backend from URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      let backendUrl = urlParams.get("backend") || "http://localhost:4000";
+      // Remove trailing slash if any
+      if (backendUrl.endsWith("/")) backendUrl = backendUrl.slice(0, -1);
 
       // Show tab
       function showTab(tabName) {
@@ -796,8 +803,7 @@ Hola, este es un mensaje de prueba</textarea
 
       // Send API
       async function sendMessage(number, contentOverride = null) {
-        // Use backend proxy
-        const backendUrl = "http://localhost:4000";
+        // Use backendUrl variable defined at script start
 
         const globalMessage = document
           .getElementById("messageText")
@@ -1057,20 +1063,26 @@ Hola, este es un mensaje de prueba</textarea
         logConsole("📥 Reporte exportado", "success");
       }
 
-      // Initialize
       async function init() {
-          try {
-              const r = await fetch('http://localhost:4000/api/config/builderbot');
-              const data = await r.json();
-              if (data.configured) {
-                  document.getElementById('apiKey').value = "●●●●●●●●●●●●●●●●";
-                  logConsole("✅ API Key detectada en el servidor", "success");
-              } else {
-                  logConsole("⚠️ No se detectó API Key en el servidor. Revisa el archivo .env", "error");
-              }
-          } catch(e) {
-              logConsole("❌ Error conectando con el servidor para obtener configuración", "error");
+        try {
+          logConsole(`Conectando a backend: ${backendUrl}`, "info");
+          const r = await fetch(`${backendUrl}/api/config/builderbot`);
+          const data = await r.json();
+          if (data.configured) {
+            document.getElementById("apiKey").value = "●●●●●●●●●●●●●●●●";
+            logConsole("✅ API Key detectada en el servidor", "success");
+          } else {
+            logConsole(
+              "⚠️ No se detectó API Key en el servidor. Revisa el archivo .env",
+              "error",
+            );
           }
+        } catch (e) {
+          logConsole(
+            "❌ Error conectando con el servidor para obtener configuración",
+            "error",
+          );
+        }
       }
       init();
 

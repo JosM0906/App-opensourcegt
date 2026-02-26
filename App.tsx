@@ -1734,7 +1734,11 @@ export default function App() {
             <>
               <PageHeader title="Mensajes masivos" subtitle="Carga Excel o pega números." />
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <iframe title="mensajes-masivos" src="/embedded/mensajes.html" className="h-[78vh] w-full" />
+                <iframe 
+                  title="mensajes-masivos" 
+                  src={`/embedded/mensajes.html?backend=${encodeURIComponent(backend)}`} 
+                  className="h-[78vh] w-full" 
+                />
               </div>
             </>
           )}
