@@ -83,7 +83,6 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
             for (let i = 0; i < mFirstDay; i++) mDays.push(null);
             for (let i = 1; i <= mDaysInMonth; i++) mDays.push(new Date(year, mIndex, i));
 
-            // Nombres cortos de meses para la vista anual
             const monthNamesShort = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
             return (
@@ -98,7 +97,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                 <h3 className="text-[13px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-1 sm:mb-3 pl-1">
                   {monthNamesShort[mIndex]}
                 </h3>
-                {/* Grid de días en vista anual sin las letras de la semana para emular iOS */}
+                {/* Grid de días en vista anual sin las letras de la semana para una vista limpia */}
                 <div className="grid grid-cols-7 gap-y-[2px] gap-x-[2px] text-center text-[9px] sm:text-xs font-medium text-slate-800">
                   {mDays.map((d, i) => {
                     if (!d) return <div key={i} />;
@@ -264,6 +263,5 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
       </div>
     );
   };
-
   return viewMode === 'year' ? renderYearView() : renderMonthView();
 }
