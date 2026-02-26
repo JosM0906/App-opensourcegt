@@ -56,7 +56,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
         {/* Year Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold text-red-500">
+            <h2 className="text-2xl font-bold text-[#0B1F3A]">
               {year}
             </h2>
           </div>
@@ -92,7 +92,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                   setViewMode('month');
                 }}
               >
-                <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-red-500 transition-colors">
+                <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-[#0B1F3A] transition-colors">
                   {monthNames[mIndex]}
                 </h3>
                 <div className="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 mb-2">
@@ -108,7 +108,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                     return (
                       <div key={i} className="relative flex justify-center items-center h-8 w-8 mx-auto">
                         <span className={`w-full h-full flex items-center justify-center rounded-full
-                          ${isToday ? 'bg-red-500 text-white font-bold shadow-sm' : 'text-slate-700 hover:bg-slate-200'}
+                          ${isToday ? 'bg-[#0B1F3A] text-white font-bold shadow-sm' : 'text-slate-700 hover:bg-slate-200'}
                         `}>
                           {d.getDate()}
                         </span>
@@ -142,7 +142,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
           <div className="flex items-center">
             <button 
               onClick={() => setViewMode('year')}
-              className="flex items-center gap-1 text-red-500 hover:text-red-600 transition-colors font-medium text-lg px-2 py-1 -ml-2 rounded-lg hover:bg-red-50"
+              className="flex items-center gap-1 text-[#0B1F3A] hover:text-[#0A1A31] transition-colors font-medium text-lg px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100"
             >
               <ChevronLeft className="w-6 h-6" />
               <span>{year}</span>
@@ -189,14 +189,14 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                 key={i} 
                 className={`
                   group relative border-b border-r border-slate-100 p-1.5 sm:p-2 min-h-[100px] sm:min-h-[120px] transition-colors hover:bg-slate-50
-                  ${isToday ? 'bg-red-50/30' : ''}
+                  ${isToday ? 'bg-[#0B1F3A]/5' : ''}
                 `}
                 onClick={() => onDateSelect(date)}
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className={`
                     text-xs sm:text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full
-                    ${isToday ? 'bg-red-500 text-white' : 'text-slate-700'}
+                    ${isToday ? 'bg-[#0B1F3A] text-white' : 'text-slate-700'}
                   `}>
                     {date.getDate()}
                   </span>
