@@ -321,8 +321,8 @@ function ProductModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4 text-left">
+      <div className="w-full max-w-xl max-h-[95vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-xl">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">{initialData ? "Editar Producto" : "Nuevo Producto"}</h3>
         
         <div className="space-y-4">
@@ -1245,12 +1245,24 @@ export default function App() {
         </div>
       </div>
 
-      <div className="flex w-full min-h-screen items-stretch gap-6 px-6 py-6">
+      <div className="flex w-full min-h-screen items-stretch md:gap-6 px-0 md:px-6 py-0 md:py-6">
+
+        {/* Sidebar Overlay (mobile only) */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-10 bg-slate-900/40 backdrop-blur-sm md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
         {/* Sidebar */}
-        {/* Sidebar */}
-        <aside className={classNames("w-72 shrink-0", sidebarOpen ? "block" : "hidden", "md:block")}>
-          <div className="sticky top-6 h-[calc(100vh-3rem)] rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
+        <aside
+          className={classNames(
+            "fixed inset-y-0 left-0 z-20 w-72 transform bg-slate-50 transition-transform duration-300 md:relative md:z-auto md:translate-x-0 md:bg-transparent",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          <div className="h-full md:sticky md:top-6 md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl border-r md:border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
             
             {/* Header */}
             <div className="p-4 border-b border-slate-100">
@@ -1337,7 +1349,7 @@ export default function App() {
 
 
         {/* Main */}
-        <main className="flex-1 pb-10">
+        <main className="flex-1 px-4 py-6 md:px-0 md:py-0 pb-10">
           {/* METRICS */}
           {activeTab === AppTab.METRICS && (
             <>
@@ -1428,7 +1440,7 @@ export default function App() {
                         disabled={isSyncing || isSavingPrompt}
                         className="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                       >
-                        {isSyncing ? <RefreshCw className="h-4 w-4 animate-spin text-blue-600" /> : <Cloud className="h-4 w-4 text-blue-600" />}
+                        {isSyncing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Cloud className="h-4 w-4 text-blue-600" />}
                         {isSyncing ? "Sincronizando..." : "Sincronizar Cloud"}
                       </button>
                       <button
@@ -1441,7 +1453,7 @@ export default function App() {
                 }
               />
 
-              <div className="grid gap-6 lg:grid-cols-2 h-[75vh]">
+              <div className="grid gap-6 lg:grid-cols-2 lg:h-[75vh] min-h-[600px]">
                 
                  {/* CHAT AREA (Left) */}
                  <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -1547,13 +1559,14 @@ export default function App() {
                 subtitle="Historial de productos disponibles. Puedes verlos por tarjetas o listado."
                 actions={
                   <>
-                    <div className="relative">
+                  <div className="flex w-full items-center gap-2 overflow-x-auto pb-2 md:w-auto md:overflow-visible md:pb-0">
+                    <div className="relative shrink-0">
                       <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                       <input
                         value={catalogQuery}
                         onChange={(e) => setCatalogQuery(e.target.value)}
                         placeholder="Buscar producto…"
-                        className="w-72 rounded-2xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-slate-400"
+                        className="w-48 sm:w-72 rounded-2xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-slate-400"
                       />
                     </div>
                     <input
@@ -1564,55 +1577,57 @@ export default function App() {
                       onChange={(e) => {
                         const f = e.target.files?.[0];
                         if (f) uploadCatalogPdf(f);
-                        e.currentTarget.value = ""; // permite subir el mismo PDF otra vez
+                        e.currentTarget.value = ""; 
                       }}
                     />
-
 
                     <button
                       onClick={loadCatalog}
                       disabled={catalogLoading}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                      className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
                     >
                       <RefreshCcw className={classNames("h-4 w-4", catalogLoading ? "animate-spin" : "")} />
-                      {catalogLoading ? "Cargando..." : "Recargar"}
+                      <span className="hidden sm:inline">{catalogLoading ? "Cargando..." : "Recargar"}</span>
                     </button>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       <input
                         type="text"
-                        placeholder="Carpeta  (ej: Calzado2024)"
+                        placeholder="Carpeta (ej: 2024)"
                         value={catalogFolder}
                         onChange={(e) => setCatalogFolder(e.target.value)}
-                        className="w-64 rounded-2xl border border-slate-200 bg-white py-2 px-3 text-sm outline-none focus:border-slate-400"
+                        className="w-32 sm:w-48 rounded-2xl border border-slate-200 bg-white py-2 px-3 text-sm outline-none focus:border-slate-400"
                       />
                       <button
                         onClick={() => {
                           if (!catalogFolder.trim()) {
-                            alert("Por favor ingresa el nombre de la carpeta en osposgt.com antes de subir el PDF.");
+                            alert("Ingresa la carpeta.");
                             return;
                           }
                           fileRef.current?.click();
                         }}
                         disabled={uploading}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                        className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
                       >
-                        {uploading ? "Subiendo..." : "Subir PDF"}
+                         <UploadCloud className="h-4 w-4" />
+                         <span className="hidden sm:inline">{uploading ? "Subiendo..." : "Subir PDF"}</span>
                       </button>
                     </div>
-<button
+
+                    <button
                       onClick={() => setCatalogView((v) => (v === "cards" ? "list" : "cards"))}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     >
                       {catalogView === "cards" ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-                      {catalogView === "cards" ? "Ver listado" : "Ver tarjetas"}
                     </button>
+
                     <button
                       onClick={openNewProduct}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-[#0B1F3A] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0A1A31]"
+                      className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-[#0B1F3A] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0A1A31]"
                     >
-                      <Plus className="h-4 w-4" /> Nuevo
+                      <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Nuevo</span>
                     </button>
+                  </div>
                   </>
                 }
               />
@@ -1768,7 +1783,8 @@ export default function App() {
                   <div className="text-sm text-red-600">{campError}</div>
                 </Card>
               ) : (
-                <div className="h-[700px]">
+                <div className="overflow-x-auto pb-4">
+                  <div className="h-[700px] min-w-[800px]">
                   <CalendarModule 
                     campaigns={campaigns}
                     onDateSelect={(date) => {
@@ -1800,6 +1816,7 @@ export default function App() {
                     }}
                   />
                 </div>
+              </div>
               )}
             </>
           )}
@@ -1844,80 +1861,81 @@ export default function App() {
                     <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{campError}</div>
                   ) : null}
 
-                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div className="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
-                      <div className="col-span-4">Campaña</div>
-                      <div className="col-span-3">Fecha/Hora</div>
-                      <div className="col-span-2">Estado</div>
-                      <div className="col-span-1 text-right">#</div>
-                      <div className="col-span-2 text-right">Acciones</div>
-                    </div>
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="min-w-[800px]">
+                      <div className="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
+                        <div className="col-span-4">Campaña</div>
+                        <div className="col-span-3">Fecha/Hora</div>
+                        <div className="col-span-2">Estado</div>
+                        <div className="col-span-1 text-right">#</div>
+                        <div className="col-span-2 text-right">Acciones</div>
+                      </div>
 
-                    <div className="divide-y divide-slate-200">
-                      {campaigns.length === 0 ? (
-                        <div className="p-6 text-sm text-slate-600">No hay campañas todavía.</div>
-                      ) : (
-                        campaigns
-                          .slice()
-                          .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
-                          .map((c) => (
-                            <div key={c.id} className="grid grid-cols-12 items-center gap-2 px-4 py-3 text-sm">
-                              <div className="col-span-4">
-                                <div className="font-semibold text-slate-900">{c.name}</div>
-                                <div className="line-clamp-1 text-xs text-slate-500">{c.message}</div>
-                              </div>
-                              <div className="col-span-3 text-slate-700">
-                                {c.isCustom 
-                                  ? (() => {
-                                      if (!c.numbers || c.numbers.length === 0) return "Sin fechas";
-                                      // Buscar la fecha más temprana
-                                      const dates = c.numbers.map((n: any) => new Date(n.scheduledAt || ""));
-                                      const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
-                                      return minDate.toLocaleString();
-                                    })()
-                                  : new Date(c.scheduledAt).toLocaleString()}
-                              </div>
-                              <div className="col-span-2">
-                                <Badge status={c.status} />
-                              </div>
-                              <div className="col-span-1 text-right text-slate-700">
-                                {c.isCustom && typeof c.numbers[0] === 'object' ? c.numbers.length : c.numbers?.length ?? 0}
-                              </div>
-                              <div className="col-span-2 flex justify-end gap-1">
-                                {c.status === "scheduled" || c.status === "paused" ? (
+                      <div className="divide-y divide-slate-200">
+                        {campaigns.length === 0 ? (
+                          <div className="p-6 text-sm text-slate-600">No hay campañas todavía.</div>
+                        ) : (
+                          campaigns
+                            .slice()
+                            .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
+                            .map((c) => (
+                              <div key={c.id} className="grid grid-cols-12 items-center gap-2 px-4 py-3 text-sm">
+                                <div className="col-span-4">
+                                  <div className="font-semibold text-slate-900">{c.name}</div>
+                                  <div className="line-clamp-1 text-xs text-slate-500">{c.message}</div>
+                                </div>
+                                <div className="col-span-3 text-slate-700">
+                                  {c.isCustom 
+                                    ? (() => {
+                                        if (!c.numbers || c.numbers.length === 0) return "Sin fechas";
+                                        const dates = c.numbers.map((n: any) => new Date(n.scheduledAt || ""));
+                                        const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+                                        return minDate.toLocaleString();
+                                      })()
+                                    : new Date(c.scheduledAt).toLocaleString()}
+                                </div>
+                                <div className="col-span-2">
+                                  <Badge status={c.status} />
+                                </div>
+                                <div className="col-span-1 text-right text-slate-700">
+                                  {c.isCustom && typeof c.numbers[0] === 'object' ? c.numbers.length : c.numbers?.length ?? 0}
+                                </div>
+                                <div className="col-span-2 flex justify-end gap-1">
+                                  {c.status === "scheduled" || c.status === "paused" ? (
+                                    <button
+                                      onClick={() => togglePauseCampaign(c.id)}
+                                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                      title={c.status === "paused" ? "Reanudar" : "Pausar"}
+                                    >
+                                      {c.status === "paused" ? <Play className="h-3.5 w-3.5 text-emerald-600" /> : <Pause className="h-3.5 w-3.5 text-amber-600" />}
+                                    </button>
+                                  ) : null}
                                   <button
-                                    onClick={() => togglePauseCampaign(c.id)}
+                                    onClick={() => runCampaignNow(c.id)}
                                     className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                                    title={c.status === "paused" ? "Reanudar campaña" : "Pausar campaña"}
+                                    title="Enviar"
                                   >
-                                    {c.status === "paused" ? <Play className="h-3.5 w-3.5 text-emerald-600" /> : <Pause className="h-3.5 w-3.5 text-amber-600" />}
+                                    <Send className="h-3.5 w-3.5" />
                                   </button>
-                                ) : null}
-                                <button
-                                  onClick={() => runCampaignNow(c.id)}
-                                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                                  title="Enviar ahora"
-                                >
-                                  <Send className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => openEditCampaign(c)}
-                                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                                  title="Editar"
-                                >
-                                  <Edit2 className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => deleteCampaign(c.id)}
-                                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-red-700 hover:bg-red-50"
-                                  title="Eliminar"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
+                                  <button
+                                    onClick={() => openEditCampaign(c)}
+                                    className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                    title="Editar"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteCampaign(c.id)}
+                                    className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-red-700 hover:bg-red-50"
+                                    title="Eliminar"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          ))
-                      )}
+                            ))
+                        )}
+                      </div>
                     </div>
                   </div>
                 </>
@@ -1925,8 +1943,8 @@ export default function App() {
 
               {/* Modal */}
               {campFormOpen ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                  <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4">
+                  <div className="w-full max-w-2xl max-h-[95vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-xl">
                     <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                       <div>
                         <div className="text-sm font-semibold text-slate-900">{editing ? "Editar campaña" : "Nueva campaña"}</div>
@@ -2255,8 +2273,8 @@ export default function App() {
 
       {/* Admin unlock modal */}
       {adminModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4">
+          <div className="w-full max-w-md max-h-[95vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <div>
                 <div className="text-sm font-semibold text-slate-900">Acceso Administrador</div>
