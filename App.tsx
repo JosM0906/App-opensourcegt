@@ -1520,7 +1520,7 @@ export default function App() {
                 </div>
 
                 {/* EDITOR AREA (Right) */}
-                <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[400px] lg:min-h-0">
+                <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[500px] lg:min-h-0">
                    <div className="border-b border-slate-200 p-4 flex items-center justify-between bg-slate-50">
                      <div className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                        <FileEdit className="h-4 w-4 text-emerald-600" /> Editor de Prompt
@@ -1534,9 +1534,9 @@ export default function App() {
                         Guardar Prompt
                       </button>
                    </div>
-                   <div className="flex-1 relative min-h-[300px] lg:min-h-0">
+                   <div className="flex-1 relative min-h-[400px] lg:min-h-0">
                       <textarea
-                        className="w-full h-full p-4 font-mono text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                        className="w-full h-full p-4 font-mono text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none resize-none overflow-y-auto"
                         value={systemPrompt}
                         onChange={(e) => setSystemPrompt(e.target.value)}
                         placeholder="Cargando prompt..."
