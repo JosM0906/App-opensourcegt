@@ -147,24 +147,36 @@ function ensureDataDir() {
 // ============================
 //  Logs persistentes
 // ============================
-const LOGS_PATH = path.join(__dirname, "logs.json");
 let logs = [];
-
 async function loadLogs() {
   try {
-    const raw = await fsp.readFile(LOGS_PATH, "utf-8");
-    const parsed = JSON.parse(raw);
-    logs = Array.isArray(parsed?.logs) ? parsed.logs : Array.isArray(parsed) ? parsed : [];
-  } catch {
-    logs = [];
-  }
+    const res = await pool.query('SELECT * FROM logs ORDER BY timestamp DESC LIMIT 1000');
+    logs = res.rows.map(r => ({
+      at: r.timestamp.toISOString(),
+      phone: r.phone,
+      number: r.number,
+      name: r.name,
+      type: r.role === 'user' ? 'in' : 'out',
+      role: r.role,
+      text_in: r.text_in,
+      text_out: r.text_out,
+      message: r.message
+    }));
+    return logs;
+  } catch(e) { console.error(e); logs = []; return []; }
 }
 async function saveLogs() {
   try {
-    await fsp.writeFile(LOGS_PATH, JSON.stringify({ logs }, null, 2), "utf-8");
-  } catch (e) {
-    console.error("Error guardando logs:", e?.message || e);
-  }
+    // Only insert the most recent log (the first one added to unshift) to avoid huge rewrites
+    // Or simpler: do a targeted insert in the routes, but to keep the drop-in replacement:
+    if (logs.length > 0) {
+      const log = logs[0];
+      await pool.query(
+        'INSERT INTO logs (phone, number, name, message, role, timestamp, text_in, text_out) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+        [log.phone || log.number || '', log.number || log.phone || '', log.name || '', log.message || '', log.type === 'in' ? 'user' : 'bot', new Date(log.at || Date.now()), log.text_in || '', log.text_out || '']
+      );
+    }
+  } catch(e) { console.error("Error saving log:", e); }
 }
 
 // ============================
@@ -174,17 +186,18 @@ const EVENTS_PATH = path.join(__dirname, "data", "events.json");
 
 async function loadEvents() {
   try {
-    ensureDataDir();
-    const raw = await fsp.readFile(EVENTS_PATH, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+    const res = await pool.query('SELECT * FROM events ORDER BY timestamp ASC LIMIT 1000');
+    return res.rows.map(r => ({ ...r, metadata: typeof r.metadata === 'string' ? JSON.parse(r.metadata) : r.metadata }));
+  } catch(e) { return []; }
 }
-
 async function saveEvents(events) {
-  ensureDataDir();
-  await fsp.writeFile(EVENTS_PATH, JSON.stringify(events, null, 2), "utf-8");
+  // Instead of rewriting all events, we just insert the last one to simulate append
+  try {
+    if (events.length > 0) {
+      const e = events[events.length - 1];
+      await pool.query('INSERT INTO events (type, timestamp, metadata) VALUES ($1, $2, $3)', [e.type, new Date(e.timestamp), JSON.stringify(e.metadata)]);
+    }
+  } catch(e) { console.error("Error saving event:", e); }
 }
 
 async function trackEvent(type, metadata = {}) {
@@ -270,19 +283,24 @@ const ORDERS_PATH = path.join(DATA_DIR, "orders.json");
 
 async function loadOrders() {
   try {
-    ensureDataDir();
-    if (!fs.existsSync(ORDERS_PATH)) return [];
-    const raw = await fsp.readFile(ORDERS_PATH, "utf-8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+    const res = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    return res.rows.map(r => ({
+      ...r,
+      customerName: r.customer_name,
+      createdAt: r.created_at,
+      items: typeof r.items === 'string' ? JSON.parse(r.items) : r.items
+    }));
+  } catch(e) { return []; }
 }
-
 async function saveOrders(orders) {
-  ensureDataDir();
-  await fsp.writeFile(ORDERS_PATH, JSON.stringify(orders, null, 2), "utf-8");
+  try {
+    for (const o of orders) {
+      await pool.query(
+        'INSERT INTO orders (id, timestamp, customer_name, items, total, status, created_at, phone, address) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO UPDATE SET status=EXCLUDED.status',
+        [o.id, new Date(o.timestamp), o.customerName, JSON.stringify(o.items), o.total, o.status, new Date(o.createdAt), o.phone||'', o.address||'']
+      );
+    }
+  } catch(e) { console.error(e); }
 }
 
 async function handleRecordOrder(args) {
@@ -873,18 +891,33 @@ function parseNumbersRaw(raw) {
 
 async function loadCampaigns() {
   try {
-    ensureDataDir();
-    const raw = await fsp.readFile(CAMPAIGNS_PATH, "utf-8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed?.campaigns) ? parsed.campaigns : Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+    const res = await pool.query('SELECT * FROM campaigns ORDER BY created_at DESC');
+    return res.rows.map(r => ({
+      ...r,
+      mediaUrl: r.media_url,
+      isCustom: r.is_custom,
+      scheduledAt: r.scheduled_at ? r.scheduled_at.toISOString() : null,
+      delayMs: r.delay_ms,
+      createdAt: r.created_at ? r.created_at.toISOString() : null,
+      updatedAt: r.updated_at ? r.updated_at.toISOString() : null,
+      lastAttemptAt: r.last_attempt_at ? r.last_attempt_at.toISOString() : null,
+      stats: { sent: r.stats_sent, failed: r.stats_failed },
+      numbers: typeof r.numbers === 'string' ? JSON.parse(r.numbers) : r.numbers
+    }));
+  } catch(e) { return []; }
 }
-
 async function saveCampaigns(campaigns) {
-  ensureDataDir();
-  await fsp.writeFile(CAMPAIGNS_PATH, JSON.stringify({ campaigns }, null, 2), "utf-8");
+  try {
+    for (const c of campaigns) {
+      await pool.query(
+        `INSERT INTO campaigns (id, name, message, media_url, is_custom, scheduled_at, delay_ms, numbers, status, created_at, updated_at, last_attempt_at, attempts, stats_sent, stats_failed)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+         ON CONFLICT (id) DO UPDATE SET 
+          name=EXCLUDED.name, message=EXCLUDED.message, media_url=EXCLUDED.media_url, is_custom=EXCLUDED.is_custom, scheduled_at=EXCLUDED.scheduled_at, delay_ms=EXCLUDED.delay_ms, numbers=EXCLUDED.numbers, status=EXCLUDED.status, updated_at=EXCLUDED.updated_at, last_attempt_at=EXCLUDED.last_attempt_at, attempts=EXCLUDED.attempts, stats_sent=EXCLUDED.stats_sent, stats_failed=EXCLUDED.stats_failed`,
+        [c.id, c.name, c.message, c.mediaUrl, c.isCustom, c.scheduledAt ? new Date(c.scheduledAt) : null, c.delayMs, JSON.stringify(c.numbers||[]), c.status, c.createdAt ? new Date(c.createdAt) : new Date(), c.updatedAt ? new Date(c.updatedAt) : new Date(), c.lastAttemptAt ? new Date(c.lastAttemptAt) : null, c.attempts || 0, c.stats?.sent || 0, c.stats?.failed || 0]
+      );
+    }
+  } catch(e) { console.error(e); }
 }
 
 function newId() {
@@ -1116,11 +1149,10 @@ app.put("/campaigns/:id", async (req, res) => {
 });
 
 app.delete("/campaigns/:id", async (req, res) => {
-  const campaigns = await loadCampaigns();
-  const id = String(req.params.id);
-  const next = campaigns.filter((x) => x.id !== id);
-  await saveCampaigns(next);
-  res.json({ ok: true });
+  try {
+    await pool.query('DELETE FROM campaigns WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post("/campaigns/:id/toggle-pause", async (req, res) => {
@@ -1389,17 +1421,22 @@ async function ensureCatalogDir() {
 
 async function readCatalog() {
   try {
-    const raw = await fsp.readFile(CATALOG_PATH, "utf-8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+    const res = await pool.query('SELECT * FROM products ORDER BY name ASC');
+    return res.rows.map(r => ({
+      ...r,
+      imageUrl: r.image_url
+    }));
+  } catch(e) { return []; }
 }
-
 async function saveCatalog(items) {
-  await ensureCatalogDir();
-  await fsp.writeFile(CATALOG_PATH, JSON.stringify(items, null, 2), "utf-8");
+  try {
+    for (const p of items) {
+      await pool.query(
+        'INSERT INTO products (id, name, price, category, stock, image_url) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, price=EXCLUDED.price, category=EXCLUDED.category, stock=EXCLUDED.stock, image_url=EXCLUDED.image_url',
+        [p.id, p.name, p.price, p.category, p.stock, p.imageUrl]
+      );
+    }
+  } catch(e) { console.error(e); }
 }
 
 // GET catalog
