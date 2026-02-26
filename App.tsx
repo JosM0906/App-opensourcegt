@@ -1742,17 +1742,37 @@ export default function App() {
 
 
 
-          {/* BOT PANEL (iframe) */}
-          {/* BOT PANEL (iframe) - Persistente para evitar recargas y Scale para ajustar tamaño */}
+          {/* BOT PANEL (iframe) - Persistente para evitar recargas */}
           <div className={activeTab === AppTab.BOT_PANEL ? "block" : "hidden"}>
             {hasOpenedBotPanel && (
               <>
-                <PageHeader title="Panel del Bot" subtitle="Puedes configurar y gestionar el comportamiento del bot desde aquí." />
+                <PageHeader 
+                  title="Panel del Bot" 
+                  subtitle="Configura y gestiona el bot." 
+                  actions={
+                    <a
+                      href="https://script.google.com/macros/s/AKfycbw5ursMj-vJkCibr4-x-6IeaMSS1gTiYRAVTPyXlYh44QjrdrSKVR-tjgi3GFTnBsozQg/exec"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-2xl bg-[#0B1F3A] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0A1A31] w-full sm:w-auto justify-center"
+                    >
+                      <ExternalLink className="h-4 w-4" /> Abrir en nueva ventana
+                    </a>
+                  }
+                />
+                
+                {/* Advertencia Solo en Móvil acerca de cookies y Google Login */}
+                <div className="md:hidden mb-4 rounded-xl bg-amber-50 p-4 border border-amber-200 shadow-sm">
+                  <p className="text-xs text-amber-800">
+                    <strong>Nota para móviles:</strong> Si ves un "Error 403" de Google, se debe a la seguridad de tu teléfono. Toca el botón <strong>"Abrir en nueva ventana"</strong> de arriba.
+                  </p>
+                </div>
+
                 <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm h-[78vh]">
                   <iframe 
                     title="panel-bot" 
                     src="/embedded/panel.html" 
-                    className="h-[125%] w-[125%] origin-top-left scale-[0.8] border-none" 
+                    className="h-full w-full border-none" 
                   />
                 </div>
               </>

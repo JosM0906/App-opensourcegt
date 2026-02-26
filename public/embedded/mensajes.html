@@ -59,23 +59,23 @@
       <div class="max-w-7xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
           <!-- Header -->
-          <div class="bg-white p-6 border-b border-gray-200">
+          <div class="bg-white p-4 sm:p-6 border-b border-gray-200">
             <div class="flex items-center gap-3 mb-2">
               <img
                 src="https://osposgt.com/wp/wp-content/uploads/2023/12/cropped-LOGO.png"
                 alt="OSPOS Logo"
-                class="h-10"
+                class="h-8 sm:h-10"
               />
-              <h1 class="text-3xl font-bold tracking-tight text-primary">
+              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-primary">
                 Envío Masivo WhatsApp
               </h1>
             </div>
-            <p class="text-gray-500">Plataforma de mensajería automatizada</p>
+            <p class="text-sm sm:text-base text-gray-500">Plataforma de mensajería automatizada</p>
           </div>
 
           <!-- Stats -->
           <div
-            class="grid grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-100"
+            class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 border-b border-gray-100"
           >
             <div
               class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center"
@@ -122,31 +122,31 @@
           </div>
 
           <!-- Tabs -->
-          <div class="flex border-b" id="tabs">
+          <div class="flex border-b overflow-x-auto whitespace-nowrap custom-scrollbar" id="tabs">
             <button
               onclick="showTab('config')"
-              class="tab-btn px-6 py-4 font-medium"
+              class="tab-btn px-4 sm:px-6 py-3 sm:py-4 font-medium flex-shrink-0"
               data-tab="config"
             >
               ⚙️ Configuración
             </button>
             <button
               onclick="showTab('numbers')"
-              class="tab-btn px-6 py-4 font-medium"
+              class="tab-btn px-4 sm:px-6 py-3 sm:py-4 font-medium flex-shrink-0"
               data-tab="numbers"
             >
               👥 Números
             </button>
             <button
               onclick="showTab('message')"
-              class="tab-btn px-6 py-4 font-medium"
+              class="tab-btn px-4 sm:px-6 py-3 sm:py-4 font-medium flex-shrink-0"
               data-tab="message"
             >
               💬 Mensaje
             </button>
             <button
               onclick="showTab('send')"
-              class="tab-btn px-6 py-4 font-medium"
+              class="tab-btn px-4 sm:px-6 py-3 sm:py-4 font-medium flex-shrink-0"
               data-tab="send"
             >
               🚀 Enviar

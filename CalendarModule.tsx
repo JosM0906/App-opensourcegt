@@ -54,9 +54,9 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
     return (
       <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Year Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-200">
           <div className="flex items-center gap-4">
-            <h2 className="text-3xl sm:text-2xl font-bold text-[#0B1F3A]">
+            <h2 className="text-2xl sm:text-2xl font-bold text-[#0B1F3A]">
               {year}
             </h2>
           </div>
@@ -74,8 +74,8 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
           </div>
         </div>
         
-        {/* Year Grid: 2 columnas en movil, 4 en tablet/desktop */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 sm:p-6 grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-10 custom-scrollbar">
+        {/* Year Grid: 3 columnas en movil, 4 en tablet/desktop */}
+        <div className="flex-1 overflow-y-auto px-2 py-4 sm:p-6 grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-8 gap-y-6 sm:gap-y-10 custom-scrollbar">
           {months.map(mIndex => {
             const mDaysInMonth = getDaysInMonth(year, mIndex);
             const mFirstDay = getFirstDayOfMonth(year, mIndex);
@@ -95,11 +95,11 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                   setViewMode('month');
                 }}
               >
-                <h3 className="text-[14px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-2 sm:mb-3 pl-1">
+                <h3 className="text-[12px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-1 sm:mb-3 pl-1">
                   {monthNamesShort[mIndex]}
                 </h3>
                 {/* Grid de días en vista anual sin las letras de la semana para una vista limpia */}
-                <div className="grid grid-cols-7 gap-y-[4px] gap-x-[2px] text-center text-[10px] sm:text-xs font-medium text-slate-700">
+                <div className="grid grid-cols-7 gap-y-[2px] gap-x-[1px] text-center text-[8px] sm:text-xs font-medium text-slate-700">
                   {mDays.map((d, i) => {
                     if (!d) return <div key={i} />;
                     const isToday = d.toDateString() === new Date().toDateString();
@@ -107,7 +107,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                     const hasCampaigns = campaignsByDate[dateStr] && campaignsByDate[dateStr].length > 0;
                     
                     return (
-                      <div key={i} className="relative flex justify-center items-center h-[20px] w-[20px] sm:h-8 sm:w-8 mx-auto">
+                      <div key={i} className="relative flex justify-center items-center h-[16px] w-[16px] sm:h-8 sm:w-8 mx-auto">
                         <span className={`w-full h-full flex items-center justify-center rounded-full leading-none
                           ${isToday ? 'bg-[#0B1F3A] text-white font-bold shadow-sm' : ''}
                         `}>
