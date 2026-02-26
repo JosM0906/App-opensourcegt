@@ -62,45 +62,55 @@ export default function LogsPanel() {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 p-4">
-        <div>
-          <div className="text-sm font-semibold text-slate-900">Logs de pedidos</div>
-          <div className="text-xs text-slate-500">Se refresca automáticamente</div>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between px-2">
+        <div className="text-sm text-slate-500">
+          Se refresca automáticamente
         </div>
         <button
           onClick={load}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition-all"
         >
-          <RefreshCcw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-          {loading ? "Cargando" : "Refrescar"}
+          <RefreshCcw className={loading ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
+          {loading ? "Cargando..." : "Recargar"}
         </button>
       </div>
 
       {error ? (
-        <div className="p-4 text-sm text-red-600">{error}</div>
+        <div className="p-4 text-sm text-red-600 bg-red-50 rounded-2xl">{error}</div>
       ) : (
-        <div className="max-h-[70vh] overflow-auto">
+        <div className="flex flex-col gap-4 pb-10">
           {logs.length === 0 ? (
-            <div className="p-6 text-sm text-slate-600">No hay logs todavía.</div>
+            <div className="p-6 text-sm text-slate-600 bg-white rounded-2xl border border-slate-200 shadow-sm text-center">
+              No hay logs todavía.
+            </div>
           ) : (
-            <div className="divide-y divide-slate-200">
-              {logs.map((l, idx) => (
-                <div key={idx} className="p-4">
-                  <div className="text-xs text-slate-500">{new Date(l.at).toLocaleString()}</div>
-                  <div className="mt-2 grid gap-2 md:gap-3 md:grid-cols-2">
-                    <div className="rounded-xl bg-slate-50 p-2 sm:p-3 border border-slate-100">
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Entrada (IN)</div>
-                      <div className="mt-1 whitespace-pre-wrap text-sm text-slate-800 leading-relaxed">{l.text_in}</div>
-                    </div>
-                    <div className="rounded-xl bg-slate-50 p-2 sm:p-3 border border-slate-100">
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Respuesta (OUT)</div>
-                      <div className="mt-1 whitespace-pre-wrap text-sm text-slate-800 leading-relaxed">{l.text_out}</div>
-                    </div>
+            logs.map((l, idx) => (
+              <div key={idx} className="bg-white rounded-[20px] p-4 shadow-sm border border-slate-200/60 overflow-hidden">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <div className="text-[13px] font-medium text-slate-600">
+                     {new Date(l.at).toLocaleString('es-GT', { dateStyle: 'short', timeStyle: 'medium' })}
+                  </div>
+                  <div className="text-slate-400">
+                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div className="flex flex-col gap-2">
+                  {/* Entrada */}
+                  <div className="bg-[#F0F4FF] rounded-2xl p-3 sm:p-4">
+                    <div className="text-[10px] font-bold text-blue-600/80 mb-1">ENTRADA (IN)</div>
+                    <div className="whitespace-pre-wrap text-[13px] text-slate-800 font-mono break-all">{l.text_in || "—"}</div>
+                  </div>
+
+                  {/* Respuesta */}
+                  <div className="bg-[#F2FAF6] rounded-2xl p-3 sm:p-4">
+                    <div className="text-[10px] font-bold text-emerald-600/70 mb-1">RESPUESTA (OUT)</div>
+                    <div className="whitespace-pre-wrap text-[13px] text-slate-800 font-mono break-all">{l.text_out || "—"}</div>
+                  </div>
+                </div>
+              </div>
+            ))
           )}
         </div>
       )}
