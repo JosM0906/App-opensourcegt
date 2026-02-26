@@ -1,48 +1,31 @@
-
 import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 
 export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<'year' | 'month'>('year');
 
-  // Helpers to get days
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay(); // 0 = Sunday
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const daysInMonth = getDaysInMonth(year, month);
-  const firstDay = getFirstDayOfMonth(year, month);
-  
-  // Adjust for Monday start if desired (currently Sunday start for simplicity)
-  // Let's stick to standard Sunday start for now, or match locale. 
-  // 0=Sun, 1=Mon...
-
-  const days = useMemo(() => {
-    const d = [];
-    // Padding for previous month
-    for (let i = 0; i < firstDay; i++) {
-      d.push(null);
-    }
-    // Days of current month
-    for (let i = 1; i <= daysInMonth; i++) {
-      d.push(new Date(year, month, i));
-    }
-    return d;
-  }, [year, month]);
-
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const today = () => setCurrentDate(new Date());
+  
+  const nextYear = () => setCurrentDate(new Date(year + 1, month, 1));
+  const prevYear = () => setCurrentDate(new Date(year - 1, month, 1));
+  
+  const today = () => {
+    setCurrentDate(new Date());
+  };
 
-  // Group campaigns by date str
   const campaignsByDate = useMemo(() => {
     const map = {};
     campaigns.forEach(c => {
       let datesToMap = [];
       if (c.isCustom) {
-         // Gather unique dates from its numbers
          const dSet = new Set();
          (c.numbers || []).forEach(n => {
             if (n.scheduledAt) dSet.add(new Date(n.scheduledAt).toDateString());
@@ -54,7 +37,6 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
       
       datesToMap.forEach(dateStr => {
         if (!map[dateStr]) map[dateStr] = [];
-        // Only push if not already in that specific day (avoid duplicate badge for same campaign on same day)
         if (!map[dateStr].find(existing => existing.id === c.id)) {
           map[dateStr].push(c);
         }
@@ -64,124 +46,223 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
   }, [campaigns]);
 
   const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const dayLabels = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 
-  return (
-    <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-        <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold text-slate-900 capitalize">
-            {monthNames[month]} {year}
-          </h2>
-          <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1">
-             <button onClick={prevMonth} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600">
-               <ChevronLeft className="w-5 h-5" />
+  const renderYearView = () => {
+    const months = Array.from({ length: 12 }, (_, i) => i);
+    
+    return (
+      <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        {/* Year Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold text-red-500">
+              {year}
+            </h2>
+          </div>
+          <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 p-1">
+             <button onClick={prevYear} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all">
+               <ChevronLeft className="w-5 h-5 text-slate-600" />
              </button>
              <button onClick={today} className="px-3 text-xs font-semibold text-slate-600 hover:text-slate-900">
                Hoy
              </button>
-             <button onClick={nextMonth} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600">
-               <ChevronRight className="w-5 h-5" />
+             <button onClick={nextYear} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all">
+               <ChevronRight className="w-5 h-5 text-slate-600" />
              </button>
           </div>
         </div>
-      </div>
+        
+        {/* Year Grid */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-10 custom-scrollbar">
+          {months.map(mIndex => {
+            const mDaysInMonth = getDaysInMonth(year, mIndex);
+            const mFirstDay = getFirstDayOfMonth(year, mIndex);
+            
+            const mDays = [];
+            for (let i = 0; i < mFirstDay; i++) mDays.push(null);
+            for (let i = 1; i <= mDaysInMonth; i++) mDays.push(new Date(year, mIndex, i));
 
-      {/* Grid Header */}
-      <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
-        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
-          <div key={day} className="py-2 text-center text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
-            <span className="md:hidden">{day.slice(0,1)}</span>
-            <span className="hidden md:inline">{day}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Grid Body */}
-      <div className="grid grid-cols-7 grid-rows-5 flex-1 select-none">
-        {days.map((date, i) => {
-          if (!date) return <div key={`empty-${i}`} className="bg-slate-50/30 border-b border-r border-slate-100 min-h-[120px]" />;
-          
-          const dateKey = date.toDateString();
-          const dayCampaigns = campaignsByDate[dateKey] || [];
-          const isToday = date.toDateString() === new Date().toDateString();
-
-          return (
-            <div 
-              key={i} 
-              className={`
-                group relative border-b border-r border-slate-100 p-2 min-h-[120px] transition-colors hover:bg-slate-50
-                ${isToday ? 'bg-blue-50/30' : ''}
-              `}
-              onClick={() => onDateSelect(date)}
-            >
-              <div className="flex justify-between items-start mb-1">
-                <span className={`
-                  text-xs sm:text-sm font-semibold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full
-                  ${isToday ? 'bg-blue-600 text-white' : 'text-slate-700'}
-                `}>
-                  {date.getDate()}
-                </span>
-                <div className="flex items-center gap-1">
-                  {dayCampaigns.length > 0 && (
-                    <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-100 px-1 sm:px-1.5 py-0.5 rounded transition-all">
-                      {(() => {
-                        let totalDay = 0;
-                        let sentDay = 0;
-                        dayCampaigns.forEach(c => {
-                          totalDay += (c.isCustom && typeof c.numbers?.[0] === 'object') ? c.numbers.length : (c.numbers?.length || 0);
-                          sentDay += (c.stats?.sent || 0);
-                        });
-                        return `${sentDay}/${totalDay}`;
-                      })()}
-                    </span>
-                  )}
+            return (
+              <div 
+                key={mIndex} 
+                className="cursor-pointer group flex flex-col hover:bg-slate-50 rounded-2xl p-3 -mx-3 -my-3 transition-colors" 
+                onClick={() => {
+                  setCurrentDate(new Date(year, mIndex, 1));
+                  setViewMode('month');
+                }}
+              >
+                <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-red-500 transition-colors">
+                  {monthNames[mIndex]}
+                </h3>
+                <div className="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 mb-2">
+                  {dayLabels.map((d, i) => <div key={i}>{d}</div>)}
+                </div>
+                <div className="grid grid-cols-7 gap-y-1 gap-x-1 text-center text-xs font-semibold">
+                  {mDays.map((d, i) => {
+                    if (!d) return <div key={i} />;
+                    const isToday = d.toDateString() === new Date().toDateString();
+                    const dateStr = d.toDateString();
+                    const hasCampaigns = campaignsByDate[dateStr] && campaignsByDate[dateStr].length > 0;
+                    
+                    return (
+                      <div key={i} className="relative flex justify-center items-center h-8 w-8 mx-auto">
+                        <span className={`w-full h-full flex items-center justify-center rounded-full
+                          ${isToday ? 'bg-red-500 text-white font-bold shadow-sm' : 'text-slate-700 hover:bg-slate-200'}
+                        `}>
+                          {d.getDate()}
+                        </span>
+                        {hasCampaigns && (
+                           <div className={`absolute bottom-0.5 w-1.5 h-1.5 rounded-full ${isToday ? 'bg-white' : 'bg-slate-400'}`}></div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-
-              {/* Campaigns List for this Day */}
-              <div className="space-y-1.5 overflow-y-auto max-h-[85px] custom-scrollbar pr-1">
-                {dayCampaigns.map(c => {
-                  const totalNums = c.isCustom && typeof c.numbers?.[0] === 'object' ? c.numbers.length : (c.numbers?.length || 0);
-                  const sentNums = c.stats?.sent || 0;
-                  
-                  let titleText = "";
-                  if (c.isCustom) {
-                     titleText = `Personalizada`;
-                  } else {
-                     titleText = `${new Date(c.scheduledAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} ${c.name}`;
-                  }
-
-                  const isCompleted = sentNums === totalNums && totalNums > 0;
-                  
-                  return (
-                    <div 
-                      key={c.id}
-                      onClick={(e) => { e.stopPropagation(); onEditCampaign(c); }}
-                      className={`
-                        group/item flex items-center justify-between text-[9px] sm:text-xs px-1 sm:px-2 py-1 sm:py-1.5 rounded-md border cursor-pointer transition-all hover:shadow-sm
-                        ${c.status === 'completed' || c.status === 'sent' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 
-                          c.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' :
-                          c.status === 'paused' ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' :
-                          'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'}
-                      `}
-                      title={c.name + ' - ' + c.message}
-                    >
-                      <span className="truncate pr-1 font-medium">{titleText}</span>
-                      <div className={`
-                        shrink-0 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded
-                        ${isCompleted ? 'bg-emerald-200/50 text-emerald-800 w-4 h-4 sm:w-5 sm:h-5' : 'bg-white/60 text-current opacity-90 px-1 sm:px-1.5 py-0.5'}
-                      `}>
-                        {isCompleted ? <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <span>{sentNums}/{totalNums}</span>}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+            )
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const renderMonthView = () => {
+    const daysInMonth = getDaysInMonth(year, month);
+    const firstDay = getFirstDayOfMonth(year, month);
+    
+    const days = [];
+    for (let i = 0; i < firstDay; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
+
+    return (
+      <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        {/* Month Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-200 gap-3">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setViewMode('year')}
+              className="flex items-center gap-1 text-red-500 hover:text-red-600 transition-colors font-medium text-lg px-2 py-1 -ml-2 rounded-lg hover:bg-red-50"
+            >
+              <ChevronLeft className="w-6 h-6" />
+              <span>{year}</span>
+            </button>
+          </div>
+          <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+            <h2 className="text-3xl sm:text-xl font-bold text-slate-900 capitalize">
+              {monthNames[month]} <span className="sm:hidden">{year}</span>
+            </h2>
+            <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 p-1">
+               <button onClick={prevMonth} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all">
+                 <ChevronLeft className="w-5 h-5 text-slate-600" />
+               </button>
+               <button onClick={today} className="px-3 text-xs font-semibold text-slate-600 hover:text-slate-900">
+                 Hoy
+               </button>
+               <button onClick={nextMonth} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all">
+                 <ChevronRight className="w-5 h-5 text-slate-600" />
+               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Grid Header */}
+        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+          {dayLabels.map((day, i) => (
+            <div key={i} className="py-2 text-center text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Grid Body */}
+        <div className="grid grid-cols-7 grid-rows-5 flex-1 select-none overflow-y-auto min-h-[500px]">
+          {days.map((date, i) => {
+            if (!date) return <div key={`empty-${i}`} className="bg-slate-50/30 border-b border-r border-slate-100 min-h-[100px] sm:min-h-[120px]" />;
+            
+            const dateKey = date.toDateString();
+            const dayCampaigns = campaignsByDate[dateKey] || [];
+            const isToday = date.toDateString() === new Date().toDateString();
+
+            return (
+              <div 
+                key={i} 
+                className={`
+                  group relative border-b border-r border-slate-100 p-1.5 sm:p-2 min-h-[100px] sm:min-h-[120px] transition-colors hover:bg-slate-50
+                  ${isToday ? 'bg-red-50/30' : ''}
+                `}
+                onClick={() => onDateSelect(date)}
+              >
+                <div className="flex justify-between items-start mb-1">
+                  <span className={`
+                    text-xs sm:text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full
+                    ${isToday ? 'bg-red-500 text-white' : 'text-slate-700'}
+                  `}>
+                    {date.getDate()}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {dayCampaigns.length > 0 && (
+                      <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-100 px-1 sm:px-1.5 py-0.5 rounded transition-all">
+                        {(() => {
+                          let totalDay = 0;
+                          let sentDay = 0;
+                          dayCampaigns.forEach(c => {
+                            totalDay += (c.isCustom && typeof c.numbers?.[0] === 'object') ? c.numbers.length : (c.numbers?.length || 0);
+                            sentDay += (c.stats?.sent || 0);
+                          });
+                          return `${sentDay}/${totalDay}`;
+                        })()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Campaigns List for this Day */}
+                <div className="space-y-1.5 overflow-y-auto max-h-[70px] sm:max-h-[85px] custom-scrollbar pr-0.5">
+                  {dayCampaigns.map(c => {
+                    const totalNums = c.isCustom && typeof c.numbers?.[0] === 'object' ? c.numbers.length : (c.numbers?.length || 0);
+                    const sentNums = c.stats?.sent || 0;
+                    
+                    let titleText = "";
+                    if (c.isCustom) {
+                       titleText = `Pers.`;
+                    } else {
+                       titleText = `${new Date(c.scheduledAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} ${c.name}`;
+                    }
+
+                    const isCompleted = sentNums === totalNums && totalNums > 0;
+                    
+                    return (
+                      <div 
+                        key={c.id}
+                        onClick={(e) => { e.stopPropagation(); onEditCampaign(c); }}
+                        className={`
+                          group/item flex items-center justify-between text-[9px] sm:text-xs px-1 sm:px-2 py-1 sm:py-1.5 rounded-md border cursor-pointer transition-all hover:shadow-sm
+                          ${c.status === 'completed' || c.status === 'sent' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 
+                            c.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' :
+                            c.status === 'paused' ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' :
+                            'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'}
+                        `}
+                        title={c.name + ' - ' + c.message}
+                      >
+                        <span className="truncate pr-1 font-medium">{titleText}</span>
+                        <div className={`
+                          shrink-0 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded
+                          ${isCompleted ? 'bg-emerald-200/50 text-emerald-800 w-4 h-4 sm:w-5 sm:h-5' : 'bg-white/60 text-current opacity-90 px-1 sm:px-1.5 py-0.5'}
+                        `}>
+                          {isCompleted ? <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <span>{sentNums}/{totalNums}</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return viewMode === 'year' ? renderYearView() : renderMonthView();
 }
