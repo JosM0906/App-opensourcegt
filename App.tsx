@@ -1643,35 +1643,46 @@ export default function App() {
               {catalogView === "cards" ? (
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredCatalog.map((p) => (
-                    <div key={p.id} className="rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col">
+                    <div key={p.id} className="rounded-3xl border border-slate-200 bg-white shadow-sm flex flex-col overflow-hidden">
                       <div className="p-4 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="text-sm font-semibold text-slate-900 truncate" title={p.name}>{p.name}</div>
-                            <div className="mt-0.5 text-xs text-slate-500 truncate" title={`${p.category} • ${p.id}`}>
-                              {p.category} • <span className="font-mono">{formatProductId(p.id)}</span>
-                            </div>
+                        
+                        {/* Fila 1: Título y Precio */}
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div className="text-[15px] font-bold text-slate-900 leading-tight flex-1">
+                            {p.name}
                           </div>
-                          <div className="flex flex-col items-end gap-1 shrink-0">
-                             <div className="text-sm font-bold text-[#0B1F3A]">Q{Number(p.price).toFixed(2)}</div>
-                             <button 
-                               onClick={() => openEditProduct(p)}
-                               className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                               title="Editar"
-                             >
-                                <Edit2 className="h-4 w-4" />
-                             </button>
+                          <div className="text-[15px] font-bold text-slate-900 shrink-0">
+                            Q{Number(p.price).toFixed(2)}
                           </div>
                         </div>
-                        <div className="mt-4 flex items-center justify-between bg-slate-50 rounded-lg p-2 border border-slate-100">
-                          <div className="text-xs font-medium text-slate-500">Stock Disponible</div>
-                          <div className="text-sm font-bold text-slate-900">{p.stock}</div>
+
+                        {/* Fila 2: Categoría, ID y Botón Editar */}
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                           <div className="text-[13px] text-slate-500 leading-snug">
+                             {p.category} - <span className="font-mono">{p.id}</span>
+                           </div>
+                           <button 
+                             onClick={() => openEditProduct(p)}
+                             className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors shrink-0 mt-1"
+                             title="Editar"
+                           >
+                              <Edit2 className="h-4 w-4" />
+                           </button>
                         </div>
+
+                        {/* Fila 3: Stock */}
+                        <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5 mb-2">
+                          <div className="text-[13px] font-medium text-slate-500">Stock Disponible</div>
+                          <div className="text-[14px] font-bold text-slate-900">{p.stock}</div>
+                        </div>
+
                       </div>
-                      <div className="border-t border-slate-200 p-3 flex gap-2">
+                      
+                      {/* Fila 4: Botones (Copiar y WhatsApp) */}
+                      <div className="px-4 pb-4 flex gap-3">
                         <button
                           onClick={() => navigator.clipboard.writeText(`${p.name} - Q${Number(p.price).toFixed(2)}`)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
+                          className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-3 text-[14px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
                           title="Copiar información"
                         >
                           Copiar
@@ -1681,9 +1692,10 @@ export default function App() {
                              setProductToSend(p);
                              setSendModalOpen(true);
                            }}
-                           className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-[#0B1F3A] px-2 py-2 text-[13px] font-bold text-white hover:bg-[#0A1A31] transition-colors shrink-0 whitespace-nowrap"
+                           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#0F2035] px-2 py-3 text-[14px] font-semibold text-white hover:bg-[#0A1A31] transition-colors shadow-sm"
                          >
-                           <WhatsAppIcon className="h-4 w-4 shrink-0" /> <span className="truncate">Enviar</span>
+                           <WhatsAppIcon className="h-5 w-5 shrink-0 text-emerald-400" /> 
+                           <span>Enviar</span>
                          </button>
                       </div>
                     </div>
