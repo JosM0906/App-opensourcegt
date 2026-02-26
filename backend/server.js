@@ -1208,6 +1208,7 @@ app.post("/campaigns/:id/run", async (req, res) => {
       message: c.message,
       numbers: numsToBroadcast,
       delayMs: c.delayMs,
+      mediaUrl: c.mediaUrl
     });
 
     if (c.isCustom) {
