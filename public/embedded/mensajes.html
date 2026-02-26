@@ -429,9 +429,20 @@ Hola, este es un mensaje de prueba</textarea
       let paused = false;
       let currentIndex = 0;
 
-      // Extract backend from URL params
       const urlParams = new URLSearchParams(window.location.search);
-      let backendUrl = urlParams.get("backend") || "http://localhost:4000";
+      let backendUrl = urlParams.get("backend");
+
+      if (!backendUrl || backendUrl === "undefined" || backendUrl === "") {
+        if (
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1"
+        ) {
+          backendUrl = "http://localhost:4000";
+        } else {
+          backendUrl = window.location.origin;
+        }
+      }
+      
       // Remove trailing slash if any
       if (backendUrl.endsWith("/")) backendUrl = backendUrl.slice(0, -1);
 

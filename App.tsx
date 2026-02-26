@@ -44,7 +44,7 @@ import { geminiService } from "./services/geminiService";
 import LogsPanel from "./src/components/LogsPanel";
 // import SheetsModule from "./src/components/SheetsModule"; // Commented out until module exists
 
-const backend = String(import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? "" : "http://localhost:4000"));
+const backend = String(import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? window.location.origin : "http://localhost:4000"));
 
 // Ngrok (evita la pantalla de warning)
 const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
