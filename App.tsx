@@ -321,68 +321,70 @@ function ProductModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4 text-left">
-      <div className="w-full max-w-xl max-h-[95vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-xl">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">{initialData ? "Editar Producto" : "Nuevo Producto"}</h3>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4 transition-all">
+      <div className="w-full max-w-md sm:max-w-xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl pb-safe p-6 sm:p-8 animate-in slide-in-from-bottom duration-300">
+        <h3 className="text-xl sm:text-lg font-bold text-slate-900 mb-6 sm:mb-5">
+          {initialData ? "Editar Producto" : "Nuevo Producto"}
+        </h3>
         
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="text-xs font-medium text-slate-600">Nombre</label>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide ml-1 mb-1 block">Nombre</label>
             <input 
               value={name} onChange={e => setName(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3.5 sm:py-3 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors placeholder-slate-400"
               placeholder="Ej. Taza..."
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-medium text-slate-600">Precio (Q)</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide ml-1 mb-1 block">Precio (Q)</label>
               <input 
                 type="number"
                 value={price} onChange={e => setPrice(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3.5 sm:py-3 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors placeholder-slate-400"
                 placeholder="0.00"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600">Stock</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide ml-1 mb-1 block">Stock</label>
               <input 
                 type="number"
                 value={stock} onChange={e => setStock(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3.5 sm:py-3 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors placeholder-slate-400"
                 placeholder="0"
               />
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600">Categoría</label>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide ml-1 mb-1 block">Categoría</label>
             <input 
               value={category} onChange={e => setCategory(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3.5 sm:py-3 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors placeholder-slate-400"
               placeholder="General"
             />
           </div>
            <div>
-            <label className="text-xs font-medium text-slate-600">URL Imagen</label>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide ml-1 mb-1 block">URL Imagen</label>
             <input 
               value={imageUrl} onChange={e => setImageUrl(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3.5 sm:py-3 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors placeholder-slate-400"
               placeholder="https://..."
             />
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-2">
+        <div className="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-2">
           <button 
             onClick={onClose} 
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="w-full sm:w-auto rounded-2xl bg-slate-100 px-5 py-3.5 sm:py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
           >
             Cancelar
           </button>
           <button 
             disabled={loading}
             onClick={() => onSave({ name, price: Number(price), category, stock: Number(stock), imageUrl })}
-            className="rounded-xl bg-[#0B1F3A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A1A31] disabled:opacity-50"
+            className="w-full sm:w-auto rounded-2xl bg-[#0B1F3A] px-5 py-3.5 sm:py-2.5 text-sm font-semibold text-white hover:bg-[#0A1A31] disabled:opacity-50 transition-colors"
           >
             {loading ? "Guardando..." : "Guardar"}
           </button>
@@ -1354,26 +1356,26 @@ export default function App() {
           {activeTab === AppTab.METRICS && (
             <>
               <PageHeader title="Métricas" subtitle="Vista general del rendimiento. " />
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="text-xs font-semibold text-slate-500">Conversaciones</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{metrics.totalConversations}</div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                  <div className="text-[10px] sm:text-xs font-semibold text-slate-500">Conversaciones</div>
+                  <div className="mt-1 sm:mt-2 text-xl sm:text-2xl font-semibold text-slate-900">{metrics.totalConversations}</div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="text-xs font-semibold text-slate-500">Pedidos</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{metrics.totalOrders}</div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                  <div className="text-[10px] sm:text-xs font-semibold text-slate-500">Pedidos</div>
+                  <div className="mt-1 sm:mt-2 text-xl sm:text-2xl font-semibold text-slate-900">{metrics.totalOrders}</div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="text-xs font-semibold text-slate-500">Ingresos</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">Q{metrics.revenue.toLocaleString()}</div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                  <div className="text-[10px] sm:text-xs font-semibold text-slate-500">Ingresos</div>
+                  <div className="mt-1 sm:mt-2 text-xl sm:text-2xl font-semibold text-slate-900">Q{metrics.revenue.toLocaleString()}</div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="text-xs font-semibold text-slate-500">Resp. promedio</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{metrics.avgReplyMin} min</div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                  <div className="text-[10px] sm:text-xs font-semibold text-slate-500">Resp. promedio</div>
+                  <div className="mt-1 sm:mt-2 text-xl sm:text-2xl font-semibold text-slate-900">{metrics.avgReplyMin} min</div>
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-2">
                 <Card title="Pedidos por día" subtitle="Ejemplo semanal">
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -1407,18 +1409,18 @@ export default function App() {
               {role === "admin" && metrics.interactions && (
                 <div className="mt-6">
                   <h3 className="mb-3 text-sm font-semibold text-slate-900">Actividad Administrativa</h3>
-                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
                     <Card title="Mensajes Manuales" subtitle="Enviados por botón">
-                       <div className="text-2xl font-bold text-[#0B1F3A]">{metrics.interactions.manual_messages || 0}</div>
+                       <div className="text-xl sm:text-2xl font-bold text-[#0B1F3A]">{metrics.interactions.manual_messages || 0}</div>
                     </Card>
                     <Card title="Ediciones Catálogo" subtitle="Creación/Edición">
-                       <div className="text-2xl font-bold text-[#0B1F3A]">{metrics.interactions.catalog_updates || 0}</div>
+                       <div className="text-xl sm:text-2xl font-bold text-[#0B1F3A]">{metrics.interactions.catalog_updates || 0}</div>
                     </Card>
                     <Card title="PDFs Subidos" subtitle="Actualizaciones masivas">
-                       <div className="text-2xl font-bold text-[#0B1F3A]">{metrics.interactions.pdf_uploads || 0}</div>
+                       <div className="text-xl sm:text-2xl font-bold text-[#0B1F3A]">{metrics.interactions.pdf_uploads || 0}</div>
                     </Card>
                     <Card title="Campañas" subtitle="Creadas">
-                       <div className="text-2xl font-bold text-[#0B1F3A]">{metrics.interactions.campaigns_created || 0}</div>
+                       <div className="text-xl sm:text-2xl font-bold text-[#0B1F3A]">{metrics.interactions.campaigns_created || 0}</div>
                     </Card>
                   </div>
                 </div>
@@ -1520,7 +1522,7 @@ export default function App() {
                 </div>
 
                 {/* EDITOR AREA (Right) */}
-                <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[500px] lg:min-h-0">
+                <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[75vh] sm:min-h-[500px] lg:min-h-0">
                    <div className="border-b border-slate-200 p-4 flex items-center justify-between bg-slate-50">
                      <div className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                        <FileEdit className="h-4 w-4 text-emerald-600" /> Editor de Prompt
@@ -1534,7 +1536,7 @@ export default function App() {
                         Guardar Prompt
                       </button>
                    </div>
-                   <div className="flex-1 relative min-h-[400px] lg:min-h-0">
+                   <div className="flex-1 relative min-h-[65vh] sm:min-h-[400px] lg:min-h-0">
                       <textarea
                         className="w-full h-full p-4 font-mono text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none resize-none overflow-y-auto"
                         value={systemPrompt}

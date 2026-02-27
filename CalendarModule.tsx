@@ -75,7 +75,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
         </div>
         
         {/* Year Grid: 3 columnas en movil, 4 en tablet/desktop */}
-        <div className="flex-1 overflow-y-auto px-2 py-4 sm:p-6 grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-8 gap-y-6 sm:gap-y-10 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-1 py-2 sm:p-6 grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-8 gap-y-2 sm:gap-y-10 custom-scrollbar">
           {months.map(mIndex => {
             const mDaysInMonth = getDaysInMonth(year, mIndex);
             const mFirstDay = getFirstDayOfMonth(year, mIndex);
@@ -95,11 +95,11 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                   setViewMode('month');
                 }}
               >
-                <h3 className="text-[12px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-1 sm:mb-3 pl-1">
+                <h3 className="text-[10px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-0.5 sm:mb-3 pl-0.5">
                   {monthNamesShort[mIndex]}
                 </h3>
                 {/* Grid de días en vista anual sin las letras de la semana para una vista limpia */}
-                <div className="grid grid-cols-7 gap-y-[2px] gap-x-[1px] text-center text-[8px] sm:text-xs font-medium text-slate-700">
+                <div className="grid grid-cols-7 gap-y-[1px] gap-x-[1px] text-center text-[7px] sm:text-xs font-medium text-slate-700">
                   {mDays.map((d, i) => {
                     if (!d) return <div key={i} />;
                     const isToday = d.toDateString() === new Date().toDateString();
@@ -107,14 +107,14 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                     const hasCampaigns = campaignsByDate[dateStr] && campaignsByDate[dateStr].length > 0;
                     
                     return (
-                      <div key={i} className="relative flex justify-center items-center h-[16px] w-[16px] sm:h-8 sm:w-8 mx-auto">
+                      <div key={i} className="relative flex justify-center items-center h-[12px] w-[12px] sm:h-8 sm:w-8 mx-auto">
                         <span className={`w-full h-full flex items-center justify-center rounded-full leading-none
                           ${isToday ? 'bg-[#0B1F3A] text-white font-bold shadow-sm' : ''}
                         `}>
                           {d.getDate()}
                         </span>
                         {hasCampaigns && (
-                           <div className={`absolute -bottom-[2px] w-[3px] h-[3px] sm:w-[5px] sm:h-[5px] rounded-full ${isToday ? 'bg-white' : 'bg-slate-300'}`}></div>
+                           <div className={`absolute -bottom-[1px] w-[2px] h-[2px] sm:w-[5px] sm:h-[5px] rounded-full ${isToday ? 'bg-white' : 'bg-slate-300'}`}></div>
                         )}
                       </div>
                     )
