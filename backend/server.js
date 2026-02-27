@@ -636,26 +636,32 @@ app.get("/logs", (_req, res) => {
 //  System instruction (Dynamic from file)
 // ============================
 const PROMPT_PATH = path.join(DATA_DIR, "prompt.txt");
+let cachedPrompt = "";
 
-async function loadSystemPrompt() {
+async function loadSystemPrompt(forceRead = false) {
+  if (cachedPrompt && !forceRead) return cachedPrompt;
   try {
     ensureDataDir();
     if (!fs.existsSync(PROMPT_PATH)) {
-       // Create default if not exists
-       const defaultPrompt = `Eres un asistente virtual de ventas de ALMACÉN EL TESORO / DKALUMA S.A... (default)`;
+       const defaultPrompt = `Eres un asistente virtual de ventas de ALMACÉN EL TESORO / DKALUMA S.A. Tu objetivo es asesorar a los clientes de forma profesional y amable.`;
        await fsp.writeFile(PROMPT_PATH, defaultPrompt, "utf-8");
+       cachedPrompt = defaultPrompt;
        return defaultPrompt;
     }
-    return await fsp.readFile(PROMPT_PATH, "utf-8");
+    const data = await fsp.readFile(PROMPT_PATH, "utf-8");
+    cachedPrompt = data;
+    return data;
   } catch (e) {
     console.error("Error reading prompt:", e);
-    return "Eres un asistente útil."; // Fallback
+    return cachedPrompt || "Eres un asistente útil."; 
   }
 }
 
+// Carga inicial
+loadSystemPrompt(true).then(() => console.log("[Backend] Prompt cargado en memoria correctamente"));
+
 app.get("/admin/prompt", async (_req, res) => {
-  const prompt = await loadSystemPrompt();
-  res.json({ prompt });
+  res.json({ prompt: cachedPrompt || await loadSystemPrompt() });
 });
 
 app.post("/admin/prompt", async (req, res) => {
@@ -665,6 +671,7 @@ app.post("/admin/prompt", async (req, res) => {
     
     await ensureDataDir();
     await fsp.writeFile(PROMPT_PATH, prompt, "utf-8");
+    cachedPrompt = prompt;
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });

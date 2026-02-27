@@ -35,6 +35,9 @@ import {
   BarChart3, // Added BarChart3
   Save, // Added for AI Config
   RefreshCw, // Added for AI Config
+  Zap,
+  Users,
+  X,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
@@ -710,7 +713,7 @@ export default function App() {
   }
 
   // AI Config
-  const [systemPrompt, setSystemPrompt] = useState("");
+  const [systemPrompt, setSystemPrompt] = useState(() => localStorage.getItem("osgt_prompt_cache") || "");
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -721,7 +724,12 @@ export default function App() {
     if (role === 'admin') {
       fetch(`${backend}/admin/prompt`, { headers: NGROK_HEADERS })
         .then(r => r.json())
-        .then(d => d.prompt && setSystemPrompt(d.prompt))
+        .then(d => {
+          if (d.prompt) {
+            setSystemPrompt(d.prompt);
+            localStorage.setItem("osgt_prompt_cache", d.prompt);
+          }
+        })
         .catch(e => console.error("Error loading prompt:", e));
     }
   }, [role, backend]);
@@ -735,6 +743,7 @@ export default function App() {
         body: JSON.stringify({ prompt: systemPrompt })
       });
       if (res.ok) {
+        localStorage.setItem("osgt_prompt_cache", systemPrompt);
         alert("Prompt actualizado correctamente");
       } else {
         alert("Error al guardar el prompt");
@@ -1522,7 +1531,7 @@ export default function App() {
                 </div>
 
                 {/* EDITOR AREA (Right) */}
-                <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[75vh] sm:min-h-[500px] lg:min-h-0">
+                <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[85vh] sm:min-h-[500px] lg:min-h-0">
                    <div className="border-b border-slate-200 p-4 flex items-center justify-between bg-slate-50">
                      <div className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                        <FileEdit className="h-4 w-4 text-emerald-600" /> Editor de Prompt
@@ -1536,7 +1545,7 @@ export default function App() {
                         Guardar Prompt
                       </button>
                    </div>
-                   <div className="flex-1 relative min-h-[65vh] sm:min-h-[400px] lg:min-h-0">
+                   <div className="flex-1 relative min-h-[75vh] sm:min-h-[400px] lg:min-h-0">
                       <textarea
                         className="w-full h-full p-4 font-mono text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none resize-none overflow-y-auto"
                         value={systemPrompt}
@@ -2039,244 +2048,305 @@ export default function App() {
                 </>
               )}
 
-              {/* Modal */}
+              {/* Modal Nueva/Editar Campaña Estilo iOS */}
               {campFormOpen ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4">
-                  <div className="w-full max-w-2xl max-h-[95vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-xl">
-                    <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4 transition-all">
+                  <div className="w-full max-w-2xl max-h-[95vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl animate-in slide-in-from-bottom duration-300 pb-safe">
+                    <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
                       <div>
-                        <div className="text-sm font-semibold text-slate-900">{editing ? "Editar campaña" : "Nueva campaña"}</div>
-                        <div className="text-xs text-slate-500">Los números se limpian y deduplican con /campaigns/parse.</div>
+                        <h3 className="text-xl sm:text-lg font-bold text-slate-900">{editing ? "Editar campaña" : "Nueva campaña"}</h3>
+                        <p className="text-[11px] text-slate-500 mt-0.5 tracking-tight">Los números se limpian automáticamente antes de guardar.</p>
                       </div>
-                      <button onClick={() => setCampFormOpen(false)} className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                      <button onClick={() => setCampFormOpen(false)} className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200">
                         Cerrar
                       </button>
                     </div>
 
-                    <div className="space-y-4 p-5">
-                      <div className="grid gap-3 md:grid-cols-2">
+                    <div className="p-6 sm:p-8 space-y-6">
+                      <div className="grid gap-5 md:grid-cols-2">
                         <div>
-                          <label className="text-xs font-semibold text-slate-600">Nombre</label>
-                          <input value={formName} onChange={(e) => setFormName(e.target.value)} className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400" />
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">Nombre de Campaña</label>
+                          <input 
+                            value={formName} 
+                            onChange={(e) => setFormName(e.target.value)} 
+                            placeholder="Ej. Promo Verano"
+                            className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3.5 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors" 
+                          />
                         </div>
                         <div>
-                          <label className="text-xs font-semibold text-slate-600">Fecha/hora (local)</label>
-                          <input type="datetime-local" value={formScheduledAtLocal} onChange={(e) => setFormScheduledAtLocal(e.target.value)} className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400" />
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">Fecha y Hora de Envío</label>
+                          <input 
+                            type="datetime-local" 
+                            value={formScheduledAtLocal} 
+                            onChange={(e) => setFormScheduledAtLocal(e.target.value)} 
+                            className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors" 
+                          />
                         </div>
                       </div>
 
                       <div>
-                        <label className="text-xs font-semibold text-slate-600">Mensaje</label>
-                        <textarea value={formMessage} onChange={(e) => setFormMessage(e.target.value)} rows={4} className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400" />
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">Mensaje de WhatsApp</label>
+                        <textarea 
+                          value={formMessage} 
+                          onChange={(e) => setFormMessage(e.target.value)} 
+                          rows={4} 
+                          placeholder="Escribe el mensaje que recibirán los clientes..."
+                          className="w-full rounded-2xl border-none bg-slate-100 px-4 py-4 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors resize-none" 
+                        />
                       </div>
 
-                      <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-                          <label className="text-xs font-semibold text-slate-800">Imagen / Archivo Adjunto (Opcional)</label>
-                          <div className="mt-2 flex overflow-hidden flex-col sm:flex-row gap-2">
+                      <div className="rounded-3xl bg-slate-50 border border-slate-100 p-5">
+                          <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-3 block">📦 Media (Imagen o PDF)</label>
+                          <div className="flex flex-col gap-3">
                             <input 
                               type="text" 
                               value={formMediaUrl} 
                               onChange={(e) => setFormMediaUrl(e.target.value)} 
-                              placeholder="URL del archivo o sube uno..." 
-                              className="w-full flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400 bg-white" 
+                              placeholder="Pega URL o usa los botones de abajo..." 
+                              className="w-full rounded-xl border-none bg-white px-4 py-2 text-xs font-medium text-slate-600 outline-none focus:ring-1 focus:ring-slate-200 shadow-sm" 
                             />
                             <div className="flex gap-2">
-                              <div className="relative shrink-0">
+                              <div className="relative flex-1">
                                 <input 
                                   type="file" 
                                   accept="image/*,video/mp4,application/pdf"
                                   onChange={(e) => handleCampaignImageUpload(e.target.files?.[0], false)}
                                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
-                                <button type="button" className="inline-flex w-full whitespace-nowrap items-center gap-2 rounded-xl bg-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-300">
-                                  <UploadCloud className="h-4 w-4" /> Subir PC
+                                <button type="button" className="w-full flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
+                                  <UploadCloud className="h-4 w-4 text-blue-600" /> Subir de PC
                                 </button>
                               </div>
-                              <button type="button" onClick={() => setShowCatalogForMedia({isOpen: true, isCustom: false})} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
+                              <button type="button" onClick={() => setShowCatalogForMedia({isOpen: true, isCustom: false})} className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#0B1F3A] py-2.5 text-xs font-bold text-white hover:bg-[#0A1A31] transition-all">
                                 <ImageIcon className="h-4 w-4" /> Catálogo
                               </button>
                             </div>
                           </div>
-                          {formMediaUrl && (
-                             <div className="mt-3">
-                               <img src={formMediaUrl} alt="Preview" className="h-[80px] w-auto max-w-[200px] object-cover rounded-lg border border-slate-200 shadow-sm" onError={(e) => e.currentTarget.style.display='none'}/>
-                             </div>
-                          )}
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-2">
+                      <div className="grid gap-5 md:grid-cols-2">
                         <div>
-                          <label className="text-xs font-semibold text-slate-600">Delay (ms) entre mensajes</label>
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">Delay (ms)</label>
                           <input
                             type="number"
                             value={formDelayMs}
                             onChange={(e) => setFormDelayMs(Number(e.target.value || 0))}
-                            className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                            className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60"
                           />
-                          <div className="mt-1 text-xs text-slate-500">Recomendado: 2000–4000ms</div>
                         </div>
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                          <div className="text-xs font-semibold text-slate-700">Tip</div>
-                          <div className="mt-1 text-xs text-slate-600">Usá el módulo “Mensajes masivos” si querés subir Excel. Aquí podés pegar números.</div>
+                        <div className="flex items-center">
+                           <div className="text-[11px] text-slate-400 bg-slate-50 rounded-2xl p-3 border border-dashed border-slate-200 leading-relaxed">
+                             <b>Tip:</b> Los números duplicados o inválidos se filtran automáticamente al guardar.
+                           </div>
                         </div>
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-semibold text-slate-600">Números (uno por línea)</label>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Números de Teléfono</label>
                           <button
                             onClick={parseNumbers}
-                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                            className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-xl hover:bg-blue-100 transition-colors flex items-center gap-1.5"
                           >
-                            <CheckCircle2 className="h-4 w-4" /> Limpiar / Deduplicar
+                            <CheckCircle2 className="h-3 w-3" /> Limpiar lista
                           </button>
                         </div>
-                        <textarea value={formNumbersRaw} onChange={(e) => setFormNumbersRaw(e.target.value)} rows={6} className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400" />
+                        <textarea 
+                          value={formNumbersRaw} 
+                          onChange={(e) => setFormNumbersRaw(e.target.value)} 
+                          rows={4} 
+                          placeholder="Pega aquí los números (uno por línea)..."
+                          className="w-full rounded-2xl border-none bg-slate-100 px-4 py-4 text-sm font-mono text-slate-800 outline-none focus:bg-slate-200/60 transition-colors" 
+                        />
                         {parseInfo ? (
-                          <div className="mt-2 text-xs text-slate-600">
-                            ✅ Válidos: <b>{parseInfo.valid}</b> • ❌ Inválidos: <b>{parseInfo.invalid}</b> • 🔁 Duplicados removidos: <b>{parseInfo.duplicatesRemoved}</b>
+                          <div className="mt-3 flex justify-around p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div className="text-center"><div className="text-[10px] text-emerald-600 font-bold uppercase">Válidos</div><div className="text-sm font-bold">{parseInfo.valid}</div></div>
+                            <div className="text-center border-x border-slate-200 px-4"><div className="text-[10px] text-red-500 font-bold uppercase">Errores</div><div className="text-sm font-bold">{parseInfo.invalid}</div></div>
+                            <div className="text-center"><div className="text-[10px] text-slate-400 font-bold uppercase">Deduplicados</div><div className="text-sm font-bold">{parseInfo.duplicatesRemoved}</div></div>
                           </div>
                         ) : null}
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 border-t border-slate-200 px-5 py-4">
-                      <button onClick={() => setCampFormOpen(false)} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 border-t border-slate-100 px-6 py-5 bg-slate-50">
+                      <button onClick={() => setCampFormOpen(false)} className="w-full sm:w-auto rounded-2xl bg-white border border-slate-200 px-6 py-3.5 sm:py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">
                         Cancelar
                       </button>
                       <button
                         onClick={saveCampaign}
                         disabled={campLoading}
-                        className="inline-flex items-center gap-2 rounded-2xl bg-[#0B1F3A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A1A31] disabled:opacity-60"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B1F3A] px-6 py-3.5 sm:py-2.5 text-sm font-bold text-white hover:bg-[#0A1A31] disabled:opacity-50 shadow-lg shadow-indigo-900/10 transition-all active:scale-[0.98]"
                       >
-                        {campLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                        Guardar
+                        {campLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                        {editing ? "Actualizar Campaña" : "Guardar Campaña"}
                       </button>
                     </div>
                   </div>
                 </div>
               ) : null}
 
-              {/* Custom Campaign Modal */}
+              {/* Modal Campaña Personalizada Estilo iOS */}
               {customCampFormOpen ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                  <div className="w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl flex flex-col max-h-[90vh]">
-                    <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 shrink-0">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4 transition-all">
+                  <div className="w-full max-w-4xl overflow-hidden rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl flex flex-col max-h-[95vh] animate-in slide-in-from-bottom duration-300 pb-safe">
+                    <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 shrink-0">
                       <div>
-                        <div className="text-sm font-semibold text-slate-900">Nueva campaña personalizada</div>
-                        <div className="text-xs text-slate-500">Asigna fechas y horas distintas a cada número. Se guardará como 1 sola campaña.</div>
+                        <h3 className="text-xl sm:text-lg font-bold text-slate-900">Campaña Personalizada</h3>
+                        <p className="text-[11px] text-slate-500 mt-0.5 tracking-tight">Asigna fechas y horas distintas a cada número de destino.</p>
                       </div>
-                      <button onClick={() => setCustomCampFormOpen(false)} className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                      <button onClick={() => setCustomCampFormOpen(false)} className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200">
                         Cerrar
                       </button>
                     </div>
 
-                    <div className="p-5 flex-1 overflow-y-auto space-y-4">
-                      <div className="grid gap-4 md:grid-cols-2">
+                    <div className="p-6 sm:p-8 flex-1 overflow-y-auto space-y-8 custom-scrollbar">
+                      {/* Configuracion Base */}
+                      <div className="grid gap-6 md:grid-cols-2">
                         <div>
-                          <label className="text-xs font-semibold text-slate-600">Nombre de la campaña</label>
-                          <input value={customFormName} onChange={e => setCustomFormName(e.target.value)} className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400" />
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">Nombre Identificador</label>
+                          <input 
+                            value={customFormName} 
+                            onChange={e => setCustomFormName(e.target.value)} 
+                            placeholder="Ej. Recordatorio Pagos"
+                            className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3.5 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors" 
+                          />
                         </div>
                         <div>
-                          <label className="text-xs font-semibold text-slate-600">Delay entre mensajes (ms)</label>
-                          <input type="number" value={customFormDelayMs} onChange={e => setCustomFormDelayMs(Number(e.target.value))} className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400" />
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">Delay entre envíos (ms)</label>
+                          <input 
+                            type="number" 
+                            value={customFormDelayMs} 
+                            onChange={e => setCustomFormDelayMs(Number(e.target.value))} 
+                            className="w-full rounded-2xl border-none bg-slate-100 px-4 py-3.5 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors" 
+                          />
                         </div>
                       </div>
 
                       <div>
-                        <label className="text-xs font-semibold text-slate-600">Mensaje (El mismo para todos)</label>
-                        <textarea value={customFormMessage} onChange={e => setCustomFormMessage(e.target.value)} rows={3} className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400" />
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">Mensaje Único</label>
+                        <textarea 
+                          value={customFormMessage} 
+                          onChange={e => setCustomFormMessage(e.target.value)} 
+                          rows={3} 
+                          placeholder="Este mensaje será el mismo para todos los números..."
+                          className="w-full rounded-2xl border-none bg-slate-100 px-4 py-4 text-sm font-medium text-slate-800 outline-none focus:bg-slate-200/60 transition-colors resize-none" 
+                        />
                       </div>
 
-                      <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-                          <label className="text-xs font-semibold text-slate-800">Imagen / Archivo Adjunto (Opcional)</label>
-                          <div className="mt-2 flex flex-col sm:flex-row gap-2">
+                      {/* Media */}
+                      <div className="rounded-3xl bg-slate-50 border border-slate-100 p-5">
+                          <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-3 block">📦 Media (Imagen o PDF)</label>
+                          <div className="flex flex-col gap-3">
                             <input 
                               type="text" 
                               value={customFormMediaUrl} 
                               onChange={(e) => setCustomFormMediaUrl(e.target.value)} 
-                              placeholder="URL del archivo o sube uno..." 
-                              className="w-full flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400 bg-white" 
+                              placeholder="URL del archivo..." 
+                              className="w-full rounded-xl border-none bg-white px-4 py-2 text-xs font-medium text-slate-600 outline-none focus:ring-1 focus:ring-slate-200 shadow-sm" 
                             />
                             <div className="flex gap-2">
-                              <div className="relative shrink-0">
+                              <div className="relative flex-1">
                                 <input 
                                   type="file" 
                                   accept="image/*,video/mp4,application/pdf"
                                   onChange={(e) => handleCampaignImageUpload(e.target.files?.[0], true)}
                                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
-                                <button type="button" className="inline-flex w-full whitespace-nowrap items-center gap-2 rounded-xl bg-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-300">
-                                  <UploadCloud className="h-4 w-4" /> Subir PC
+                                <button type="button" className="w-full flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
+                                  <UploadCloud className="h-4 w-4 text-blue-600" /> Subir de PC
                                 </button>
                               </div>
-                              <button type="button" onClick={() => setShowCatalogForMedia({isOpen: true, isCustom: true})} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
+                              <button type="button" onClick={() => setShowCatalogForMedia({isOpen: true, isCustom: true})} className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#0B1F3A] py-2.5 text-xs font-bold text-white hover:bg-[#0A1A31] transition-all">
                                 <ImageIcon className="h-4 w-4" /> Catálogo
                               </button>
                             </div>
                           </div>
-                          {customFormMediaUrl && (
-                             <div className="mt-3">
-                               <img src={customFormMediaUrl} alt="Preview" className="h-[80px] w-auto max-w-[200px] object-cover rounded-lg border border-slate-200 shadow-sm" onError={(e) => e.currentTarget.style.display='none'}/>
-                             </div>
-                          )}
                       </div>
 
-                      <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50 space-y-3">
-                        <div className="font-semibold text-sm text-slate-800">1. Agregar números masivamente</div>
-                        <p className="text-xs text-slate-600">Pega tu lista de números. Al parsear, se les asignará automáticamente una fecha espaciada (arrancando en 2 minutos y sumando 1 minuto a cada número subsecuente) y podrás ajustarla individualmente abajo.</p>
-                        <textarea value={customNumbersInput} onChange={e => setCustomNumbersInput(e.target.value)} rows={3} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400 bg-white" placeholder="Pega números uno por línea..."></textarea>
-                        <div className="flex justify-end">
-                           <button onClick={parseAndAddCustomNumbers} disabled={campLoading || !customNumbersInput.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#0B1F3A] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0A1A31] disabled:opacity-50">
-                             {campLoading ? <Loader2 className="h-3 w-3 animate-spin"/> : <Plus className="h-3 w-3" />}
-                             Parsear y añadir a la tabla
+                      {/* Agregador Masivo */}
+                      <div className="rounded-3xl border border-dashed border-slate-200 p-6 bg-slate-50/50">
+                        <div className="flex items-center justify-between mb-4">
+                           <div className="font-bold text-xs text-slate-800 uppercase tracking-wider">1. Carga masiva rápida</div>
+                           <Plus className="w-4 h-4 text-slate-400" />
+                        </div>
+                        <p className="text-[11px] text-slate-500 mb-4 leading-relaxed">Pega tu lista de números. El sistema les asignará automáticamente turnos cada minuto para ahorrarte tiempo.</p>
+                        <textarea 
+                          value={customNumbersInput} 
+                          onChange={e => setCustomNumbersInput(e.target.value)} 
+                          rows={3} 
+                          className="w-full rounded-2xl border-none bg-white px-4 py-3 text-sm font-mono text-slate-700 outline-none focus:shadow-md transition-shadow" 
+                          placeholder="Pega números uno por línea... 502XXXXXXXX"
+                        />
+                        <div className="flex justify-end mt-4">
+                           <button 
+                            onClick={parseAndAddCustomNumbers} 
+                            disabled={campLoading || !customNumbersInput.trim()} 
+                            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50 shadow-md shadow-blue-900/10 active:scale-95 transition-all"
+                           >
+                             {campLoading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Zap className="h-4 w-4" />}
+                             Añadir a la lista
                            </button>
                         </div>
                       </div>
 
-                      <div>
-                        <div className="font-semibold text-sm text-slate-800 mb-2">2. Fechas individualizadas ({customNumbersList.length} números)</div>
+                      {/* Lista de Destinatarios individualizados */}
+                      <div className="space-y-4 pb-10">
+                        <div className="flex items-center justify-between">
+                          <div className="font-bold text-xs text-slate-800 uppercase tracking-wider">2. Destinatarios y Horarios ({customNumbersList.length})</div>
+                          {customNumbersList.length > 0 && <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full font-bold">Editable</span>}
+                        </div>
+
                         {customNumbersList.length === 0 ? (
-                          <div className="text-xs text-slate-400 text-center p-4 border border-dashed rounded-xl border-slate-200">Aún no has agregado números a la tabla.</div>
+                          <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-100 rounded-3xl text-slate-300">
+                            <Users className="w-12 h-12 mb-2 opacity-10" />
+                            <p className="text-sm font-medium">No hay números todavía.</p>
+                          </div>
                         ) : (
-                          <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                             <div className="grid grid-cols-12 gap-2 bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 border-b border-slate-200">
-                               <div className="col-span-5">Número de teléfono</div>
-                               <div className="col-span-5">Fecha / Hora (Local)</div>
-                               <div className="col-span-2 text-right">Acción</div>
-                             </div>
-                             <div className="divide-y divide-slate-100 max-h-[300px] overflow-y-auto bg-white">
-                                {customNumbersList.map(n => (
-                                  <div key={n.id} className="grid grid-cols-12 gap-2 px-4 py-2 items-center text-sm">
-                                    <div className="col-span-5 font-medium">{n.phone}</div>
-                                    <div className="col-span-5">
-                                      <input type="datetime-local" value={n.scheduledAtLocal} onChange={e => updateCustomNumberDate(n.id, e.target.value)} className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs outline-none focus:border-indigo-400" />
-                                    </div>
-                                    <div className="col-span-2 flex justify-end">
-                                       <button onClick={() => removeCustomNumber(n.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded-lg">
-                                         <Trash2 className="h-4 w-4" />
-                                       </button>
-                                    </div>
-                                  </div>
-                                ))}
-                             </div>
+                          <div className="grid gap-3">
+                            {customNumbersList.map(n => (
+                              <div key={n.id} className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-100 rounded-2xl p-4 hover:border-blue-200 hover:shadow-sm transition-all">
+                                <div className="flex items-center gap-3">
+                                   <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-[#0B1F3A]">
+                                      <WhatsAppIcon className="w-4 h-4" />
+                                   </div>
+                                   <div className="font-bold text-slate-900">{n.phone}</div>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 flex-1 sm:max-w-[240px]">
+                                  <CalendarClock className="w-4 h-4 text-slate-400" />
+                                  <input 
+                                    type="datetime-local" 
+                                    value={n.scheduledAtLocal} 
+                                    onChange={e => updateCustomNumberDate(n.id, e.target.value)} 
+                                    className="flex-1 rounded-xl border-none bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:bg-blue-50 focus:text-blue-700 transition-colors" 
+                                  />
+                                </div>
+
+                                <button 
+                                  onClick={() => removeCustomNumber(n.id)} 
+                                  className="absolute -top-2 -right-2 sm:static w-7 h-7 flex items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                  title="Eliminar"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
-
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 border-t border-slate-200 px-5 py-4 shrink-0 bg-slate-50">
-                      <button onClick={() => setCustomCampFormOpen(false)} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 border-t border-slate-100 px-6 py-5 bg-slate-50 shrink-0">
+                      <button onClick={() => setCustomCampFormOpen(false)} className="w-full sm:w-auto rounded-2xl bg-white border border-slate-200 px-6 py-3.5 sm:py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
                         Cancelar
                       </button>
                       <button
                         onClick={saveCustomCampaign}
                         disabled={campLoading || customNumbersList.length === 0}
-                        className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B1F3A] px-6 py-3.5 sm:py-2.5 text-sm font-bold text-white hover:bg-[#0A1A31] disabled:opacity-50 shadow-lg shadow-indigo-900/10 transition-all active:scale-95"
                       >
                         {campLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                        Guardar Campaña
+                        {editing ? "Actualizar Campaña Personalizada" : "Guardar Campaña Personalizada"}
                       </button>
                     </div>
                   </div>
