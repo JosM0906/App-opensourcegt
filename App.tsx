@@ -1375,7 +1375,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-2">
+              <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card title="Pedidos por día" subtitle="Ejemplo semanal">
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -1820,8 +1820,7 @@ export default function App() {
                   <div className="text-sm text-red-600">{campError}</div>
                 </Card>
               ) : (
-                <div className="overflow-x-auto pb-4">
-                  <div className="h-[700px] min-w-[800px]">
+                <div className="w-full h-[70vh] sm:h-[700px]">
                   <CalendarModule 
                     campaigns={campaigns}
                     onDateSelect={(date) => {
@@ -1853,7 +1852,6 @@ export default function App() {
                     }}
                   />
                 </div>
-              </div>
               )}
             </>
           )}

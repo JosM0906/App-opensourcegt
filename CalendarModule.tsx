@@ -52,30 +52,31 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
     const months = Array.from({ length: 12 }, (_, i) => i);
     
     return (
-      <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        {/* Year Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-200">
-          <div className="flex items-center gap-4">
-            <h2 className="text-2xl sm:text-2xl font-bold text-[#0B1F3A]">
+      <div className="flex flex-col h-full bg-white sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-sm overflow-hidden">
+        {/* Year Header (iOS Style, no border on mobile) */}
+        <div className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-4">
+          <div className="flex items-center">
+            <h2 className="text-4xl sm:text-2xl font-bold text-[#0B1F3A] tracking-tight">
               {year}
             </h2>
           </div>
-          {/* Ocultamos los controles en móvil, solo los mostramos en pantallas sm en adelante */}
-          <div className="hidden sm:flex items-center rounded-xl bg-slate-50 border border-slate-200 p-1">
-             <button onClick={prevYear} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all">
-               <ChevronLeft className="w-5 h-5 text-slate-600" />
+          {/* Controles en móvil visibles como iconos simples, en PC con cajas */}
+          <div className="flex items-center gap-1 sm:gap-0 sm:rounded-xl sm:bg-slate-50 sm:border sm:border-slate-200 sm:p-1">
+             <button onClick={prevYear} className="p-1.5 sm:p-1 hover:bg-slate-100 sm:hover:bg-white rounded-full sm:rounded-lg transition-all">
+               <ChevronLeft className="w-6 h-6 sm:w-5 sm:h-5 text-slate-600 sm:text-slate-600" />
              </button>
-             <button onClick={today} className="px-3 text-xs font-semibold text-slate-600 hover:text-slate-900">
+             <button onClick={today} className="px-2 sm:px-3 text-sm sm:text-xs font-semibold text-slate-600 hover:text-[#0B1F3A]">
                Hoy
              </button>
-             <button onClick={nextYear} className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all">
-               <ChevronRight className="w-5 h-5 text-slate-600" />
+             <button onClick={nextYear} className="p-1.5 sm:p-1 hover:bg-slate-100 sm:hover:bg-white rounded-full sm:rounded-lg transition-all">
+               <ChevronRight className="w-6 h-6 sm:w-5 sm:h-5 text-slate-600 sm:text-slate-600" />
              </button>
           </div>
         </div>
         
-        {/* Year Grid: 3 columnas en movil, 4 en tablet/desktop */}
-        <div className="flex-1 overflow-y-auto px-1 py-2 sm:p-6 grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-8 gap-y-2 sm:gap-y-10 custom-scrollbar">
+        {/* Year Grid: 3 columnas estrictas en movil, 4 en tablet/desktop */}
+        {/* Reducimos el gap horizontal y padding para maximizar el uso de pantalla en movil */}
+        <div className="flex-1 overflow-y-auto px-1 sm:p-6 grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-8 gap-y-4 sm:gap-y-10 custom-scrollbar pb-8 sm:pb-6">
           {months.map(mIndex => {
             const mDaysInMonth = getDaysInMonth(year, mIndex);
             const mFirstDay = getFirstDayOfMonth(year, mIndex);
@@ -89,32 +90,36 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
             return (
               <div 
                 key={mIndex} 
-                className="cursor-pointer group flex flex-col hover:bg-slate-50 transition-colors" 
+                className="cursor-pointer group flex flex-col active:opacity-70 transition-opacity" 
                 onClick={() => {
                   setCurrentDate(new Date(year, mIndex, 1));
                   setViewMode('month');
                 }}
               >
-                <h3 className="text-[10px] sm:text-lg font-bold text-slate-800 group-hover:text-[#0B1F3A] transition-colors mb-0.5 sm:mb-3 pl-0.5">
+                {/* Título de mes justificado a la izquierda, fuerte */}
+                <h3 className="text-[15px] sm:text-lg font-bold text-[#0B1F3A] mb-1 sm:mb-3 pl-1 leading-none">
                   {monthNamesShort[mIndex]}
                 </h3>
-                {/* Grid de días en vista anual sin las letras de la semana para una vista limpia */}
-                <div className="grid grid-cols-7 gap-y-[1px] gap-x-[1px] text-center text-[7px] sm:text-xs font-medium text-slate-700">
+                
+                {/* Grid de días en vista anual sin letras de semana. Centrado de días en su bloque */}
+                <div className="grid grid-cols-7 gap-y-[2px] sm:gap-y-[4px] gap-x-[0px] text-center text-[10px] sm:text-xs font-semibold text-slate-700">
                   {mDays.map((d, i) => {
-                    if (!d) return <div key={i} />;
+                    if (!d) return <div key={i} className="" />;
                     const isToday = d.toDateString() === new Date().toDateString();
                     const dateStr = d.toDateString();
                     const hasCampaigns = campaignsByDate[dateStr] && campaignsByDate[dateStr].length > 0;
                     
                     return (
-                      <div key={i} className="relative flex justify-center items-center h-[12px] w-[12px] sm:h-8 sm:w-8 mx-auto">
-                        <span className={`w-full h-full flex items-center justify-center rounded-full leading-none
-                          ${isToday ? 'bg-[#0B1F3A] text-white font-bold shadow-sm' : ''}
+                      <div key={i} className="relative flex flex-col items-center justify-start h-[18px] sm:h-8">
+                        <span className={`flex items-center justify-center w-[16px] h-[16px] sm:w-[24px] sm:h-[24px] rounded-full leading-none
+                          ${isToday ? 'bg-[#0B1F3A] text-white' : ''}
                         `}>
                           {d.getDate()}
                         </span>
+                        
+                        {/* Indicador de campaña bajo el número del día (estilo iOS) */}
                         {hasCampaigns && (
-                           <div className={`absolute -bottom-[1px] w-[2px] h-[2px] sm:w-[5px] sm:h-[5px] rounded-full ${isToday ? 'bg-white' : 'bg-slate-300'}`}></div>
+                           <div className={`mt-[1px] w-[3px] h-[3px] rounded-full sm:w-[5px] sm:h-[5px] ${isToday ? 'bg-transparent' : 'bg-slate-400'}`}></div>
                         )}
                       </div>
                     )
