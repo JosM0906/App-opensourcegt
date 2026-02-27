@@ -1360,7 +1360,7 @@ export default function App() {
 
 
         {/* Main */}
-        <main className="flex-1 px-4 py-6 md:px-0 md:py-0 pb-10">
+        <main className="flex-1 px-2 sm:px-4 py-6 md:px-0 md:py-0 pb-10">
           {/* METRICS */}
           {activeTab === AppTab.METRICS && (
             <>
@@ -1467,7 +1467,7 @@ export default function App() {
               <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:h-[75vh]">
                 
                  {/* CHAT AREA (Left) */}
-                 <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                 <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[600px] lg:min-h-0">
                   <div className="border-b border-slate-200 p-4 text-sm font-semibold text-slate-900 bg-slate-50 flex items-center justify-between">
                     <span className="flex items-center gap-2"><Bot className="h-4 w-4 text-indigo-600"/> Chat de Prueba</span>
                     <span className="text-xs text-slate-500 font-normal">Prueba tus cambios en tiempo real</span>
@@ -1531,30 +1531,30 @@ export default function App() {
                 </div>
 
                 {/* EDITOR AREA (Right) */}
-                <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[85vh] sm:min-h-[500px] lg:min-h-0">
-                   <div className="border-b border-slate-200 p-4 flex items-center justify-between bg-slate-50">
+                <div className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[600px] lg:min-h-0">
+                   <div className="border-b border-slate-200 p-4 flex items-center justify-between bg-slate-50/50">
                      <div className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                        <FileEdit className="h-4 w-4 text-emerald-600" /> Editor de Prompt
                      </div>
                      <button
                         onClick={handleSavePrompt}
                         disabled={isSavingPrompt}
-                        className="px-3 py-1.5 bg-[#0B1F3A] text-white rounded-lg hover:bg-[#0A1A31] disabled:opacity-50 text-xs font-semibold flex items-center gap-2"
+                        className="px-4 py-2 bg-[#0B1F3A] text-white rounded-xl hover:bg-[#0A1A31] disabled:opacity-50 text-xs font-bold flex items-center gap-2 transition-all active:scale-95 shadow-sm"
                       >
                         {isSavingPrompt ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
                         Guardar Prompt
                       </button>
                    </div>
-                   <div className="flex-1 relative min-h-[75vh] sm:min-h-[400px] lg:min-h-0">
+                   <div className="flex-1 relative">
                       <textarea
-                        className="w-full h-full p-4 font-mono text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none resize-none overflow-y-auto"
+                        className="absolute inset-0 w-full h-full p-5 font-mono text-sm bg-white focus:bg-slate-50/30 outline-none resize-none overflow-y-auto transition-colors"
                         value={systemPrompt}
                         onChange={(e) => setSystemPrompt(e.target.value)}
                         placeholder="Cargando prompt..."
                       />
                    </div>
-                   <div className="p-2 bg-slate-100 text-[10px] text-slate-500 text-center border-t border-slate-200">
-                     Los cambios guardados se aplican inmediatamente al bot.
+                   <div className="px-4 py-3 bg-slate-50 text-[10px] sm:text-xs font-medium text-slate-500 text-center border-t border-slate-100">
+                     ✨ Los cambios guardados se aplican inmediatamente al bot.
                    </div>
                 </div>
 

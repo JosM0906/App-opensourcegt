@@ -1507,7 +1507,10 @@ async function saveCatalog(items) {
         [p.id, p.name, p.price, p.category, p.stock, p.imageUrl]
       );
     }
-  } catch(e) { console.error(e); }
+  } catch(e) { 
+    console.error("Error en saveCatalog:", e); 
+    throw e; // Lanzar para que el endpoint lo capture
+  }
 }
 
 // GET catalog
@@ -1679,6 +1682,9 @@ app.post(
       await saveCatalog(uniqueItems);
       
       trackEvent("pdf_upload", { pages: pages.length, items: newItems.length });
+      
+      // Log extraction success
+      console.log(`[Upload Success] PDF processed: ${pages.length} pages, ${newItems.length} new items found.`);
 
       return res.json({ 
         ok: true, 

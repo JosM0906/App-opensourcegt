@@ -37,27 +37,28 @@ export async function parsePdfPages(buffer) {
 // Legacy regex extractor (optional)
 export function extractItemsRegex(text) {
   const items = [];
+  
+  // Debug log per extraction attempt (internal)
+  try {
+     const fs = require("fs");
+     const path = require("path");
+     const debugPath = path.join(process.cwd(), "backend", "data", "pdf_debug_text.txt");
+     fs.appendFileSync(debugPath, `\n--- NEW PAGE EXTRACTION (${new Date().toISOString()}) ---\n${text}\n`);
+  } catch(e) {}
 
   // --- Strategy 1: ABxxxx Blocks + Prices (Zip) ---
-  // Detects blocks starting with "AB..." and maps them to prices found in the text (often at the bottom)
-  // This handles columnar layouts where text streams separate descriptions and prices.
   const abBlocks = text.split(/(?:^|\n)(?=AB\d+)/).filter(s => s.trim().startsWith("AB"));
-  // Find all prices in the text
-  const allPrices = [...text.matchAll(/(?:^|\s)Q\s?(\d+(?:\.\d{1,2})?)/g)].map(m => Number(m[1]));
+  // Flexible price match: Q123.00 or just 123.00 at the end of a line/section
+  const allPrices = [...text.matchAll(/(?:^|\s)Q?\s?(\d+(?:\.\d{1,2})?)(?:\s|$)/g)].map(m => Number(m[1]));
 
   if (abBlocks.length > 0 && abBlocks.length === allPrices.length) {
-      // High confidence: map 1 to 1
       for (let i = 0; i < abBlocks.length; i++) {
           const block = abBlocks[i];
           const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
-          
-          // Line 0 is Code (AB...)
-          // Line 1 is usually Product Name
           const code = lines[0];
           let name = lines[1] || "Producto sin nombre";
           
-          // Append Line 2 if Name is short (heuristic for multi-line names)
-          if (lines[2] && name.length < 25) {
+          if (lines[2] && name.length < 30) {
               name += " " + lines[2];
           }
 
@@ -67,29 +68,48 @@ export function extractItemsRegex(text) {
               code: code,
               category: "General",
               stock: 0,
-              raw: `Code: ${code}`
+              raw: `Code: ${code} (Strat 1)`
           });
       }
-      return items;
+      if (items.length > 0) return items;
   }
 
   // --- Strategy 2: Line-by-line (Classic Fallback) ---
-  // detecting "Name ... Q123" on a single line
   const lines = text.split("\n");
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const priceMatch = line.match(/(?:^|\s)Q\s?(\d+(?:\.\d{1,2})?)/);
+    // Match optional Q followed by numbers, potentially at the end
+    const priceMatch = line.match(/(?:^|\s)Q?\s?(\d+(?:\.\d{1,2})?)(?:\s|$)/);
     if (!priceMatch) continue;
     
     const price = Number(priceMatch[1]);
-    let name = line.replace(/(?:^|\s)Q\s?\d+(?:\.\d{1,2})?.*/, "").trim();
-    
-    // Clean code from start if present
+    let name = line.replace(/(?:^|\s)Q?\s?\d+(?:\.\d{1,2})?.*/, "").trim();
     name = name.replace(/^AB\d+\s*/, "");
 
-    if (name.length < 3) continue;
+    if (name.length < 3) {
+       // Look up one line if current name is empty/short
+       if (i > 0 && lines[i-1].length > 5) {
+          name = lines[i-1].trim();
+       } else continue;
+    }
 
-    items.push({ name, price, raw: line });
+    items.push({ name, price, category: "General", stock: 0, raw: line + " (Strat 2)" });
   }
+
+  // --- Strategy 3: Greedy extraction ---
+  // If still empty, try to just find ALL numbers that look like prices and match them with nearby text
+  if (items.length === 0) {
+     const priceRegex = /\d+\.\d{2}/g;
+     let match;
+     while ((match = priceRegex.exec(text)) !== null) {
+        const price = Number(match[0]);
+        const pos = match.index;
+        const chunk = text.slice(Math.max(0, pos - 50), pos).split("\n").pop().trim();
+        if (chunk.length > 3) {
+           items.push({ name: chunk, price, category: "General", stock: 0, raw: "Chunk: " + chunk });
+        }
+     }
+  }
+
   return items;
 }
