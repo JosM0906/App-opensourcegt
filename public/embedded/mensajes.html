@@ -55,9 +55,9 @@
   </head>
 
   <body class="bg-gray-100">
-    <div id="app" class="min-h-screen p-2 sm:p-6">
+    <div id="app" class="min-h-screen p-0 sm:p-6">
       <div class="max-w-7xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-white sm:rounded-2xl shadow-xl overflow-hidden min-h-screen sm:min-h-0">
           <!-- Header -->
           <div class="bg-white p-4 sm:p-6 border-b border-gray-200">
             <div class="flex items-center gap-3 mb-2">
@@ -154,7 +154,7 @@
           </div>
 
           <!-- Content -->
-          <div class="p-6">
+          <div class="p-4 sm:p-6">
             <!-- Config Tab -->
             <div id="tab-config" class="tab-content">
               <div class="space-y-6">
@@ -380,12 +380,12 @@ Hola, este es un mensaje de prueba</textarea
                   </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   <div
-                    class="col-span-2 bg-white rounded-lg border border-gray-200 flex flex-col h-96"
+                    class="md:col-span-2 bg-white rounded-xl border border-gray-200 flex flex-col h-[400px] md:h-96"
                   >
                     <div
-                      class="p-3 border-b bg-gray-50 font-semibold text-gray-700 flex justify-between"
+                      class="p-3 border-b bg-gray-50 font-semibold text-gray-700 flex justify-between rounded-t-xl"
                     >
                       <span>Resultados en tiempo real</span>
                       <span
@@ -400,7 +400,7 @@ Hola, este es un mensaje de prueba</textarea
                     ></div>
                   </div>
                   <div
-                    class="bg-gray-900 rounded-lg flex flex-col h-96 overflow-hidden"
+                    class="bg-gray-900 rounded-xl flex flex-col h-[300px] md:h-96 overflow-hidden"
                   >
                     <div
                       class="p-2 border-b border-gray-800 bg-gray-950 font-mono text-xs text-gray-400"
