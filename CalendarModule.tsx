@@ -182,7 +182,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
         {/* Grid Body */}
         <div className="grid grid-cols-7 flex-1 select-none overflow-y-auto">
           {days.map((date, i) => {
-            if (!date) return <div key={`empty-${i}`} className="bg-slate-50/10 border-b border-r border-slate-100 min-h-[70px] sm:min-h-[90px]" />;
+            if (!date) return <div key={`empty-${i}`} className="bg-slate-50/10 border-b border-r border-slate-100 min-h-[70px] sm:min-h-[120px]" />;
             
             const dateKey = date.toDateString();
             const dayCampaigns = campaignsByDate[dateKey] || [];
@@ -192,42 +192,72 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
               <div 
                 key={i} 
                 className={`
-                  group relative border-b border-r border-slate-100 p-1 transition-colors hover:bg-slate-50 min-h-[70px] sm:min-h-[90px]
+                  group relative border-b border-r border-slate-100 p-1 transition-colors hover:bg-slate-50 min-h-[70px] sm:min-h-[120px]
                   ${isToday ? 'bg-[#0B1F3A]/5' : ''}
                   ${dayCampaigns.length > 0 ? 'cursor-pointer' : ''}
                 `}
                 onClick={() => {
-                  if (dayCampaigns.length > 0) {
+                  const isMobile = window.innerWidth < 640;
+                  if (isMobile && dayCampaigns.length > 0) {
                     setSelectedDayPopover({ date, campaigns: dayCampaigns });
-                  } else {
+                  } else if (!isMobile) {
                     onDateSelect(date);
                   }
                 }}
               >
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center sm:items-start h-full">
                   <span className={`
-                    text-xs font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full mb-1
+                    text-xs font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full mb-1 sm:mb-2
                     ${isToday ? 'bg-[#0B1F3A] text-white' : 'text-slate-700'}
                   `}>
                     {date.getDate()}
                   </span>
                   
-                  {/* Indicators - Only checkmarks or dots */}
-                  <div className="flex flex-wrap items-center justify-center gap-0.5 max-w-full px-1">
+                  {/* MOBILE: Indicators - Only checkmarks or dots */}
+                  <div className="flex sm:hidden flex-wrap items-center justify-center gap-0.5 max-w-full px-1">
                     {dayCampaigns.slice(0, 4).map(c => {
                        const totalNums = c.isCustom && typeof c.numbers?.[0] === 'object' ? c.numbers.length : (c.numbers?.length || 0);
                        const sentNums = c.stats?.sent || 0;
                        const isCompleted = sentNums === totalNums && totalNums > 0;
                        
                        return isCompleted ? (
-                         <CheckCircle2 key={c.id} className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
+                         <CheckCircle2 key={c.id} className="w-3.5 h-3.5 text-emerald-500" />
                        ) : (
-                         <div key={c.id} className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-blue-400" />
+                         <div key={c.id} className="w-2 h-2 rounded-full bg-purple-400" />
                        );
                     })}
                     {dayCampaigns.length > 4 && (
                       <span className="text-[8px] font-bold text-slate-400">+{dayCampaigns.length - 4}</span>
                     )}
+                  </div>
+
+                  {/* DESKTOP: Full Campaigns List */}
+                  <div className="hidden sm:block w-full space-y-1 overflow-y-auto max-h-[80px] custom-scrollbar pr-1">
+                    {dayCampaigns.map(c => {
+                      const totalNums = c.isCustom && typeof c.numbers?.[0] === 'object' ? c.numbers.length : (c.numbers?.length || 0);
+                      const sentNums = c.stats?.sent || 0;
+                      const isCompleted = sentNums === totalNums && totalNums > 0;
+                      
+                      return (
+                        <div 
+                          key={c.id}
+                          onClick={(e) => { e.stopPropagation(); onEditCampaign(c); }}
+                          className={`
+                            flex items-center justify-between text-[10px] px-1.5 py-1 rounded-md border transition-all shadow-sm group/item
+                            ${isCompleted 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:border-emerald-300' 
+                              : 'bg-purple-50 text-purple-700 border-purple-100 hover:border-purple-300'}
+                          `}
+                        >
+                          <span className="truncate flex-1 pr-1 font-medium">{c.name}</span>
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-3 h-3 shrink-0" />
+                          ) : (
+                            <span className="text-[9px] font-bold shrink-0">{sentNums}/{totalNums}</span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -235,16 +265,16 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
           })}
         </div>
 
-        {/* Detalle flotante (Popover/Tooltip) */}
+        {/* Detalle flotante (Popover/Tooltip) - Estilo Glassmorphism */}
         {selectedDayPopover && (
-          <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
-            <div className="w-[90%] max-w-[320px] bg-white rounded-3xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 overflow-hidden">
-               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/5 backdrop-blur-sm">
+            <div className="w-[90%] max-w-[320px] bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 animate-in zoom-in-95 duration-200 overflow-hidden">
+               <div className="flex items-center justify-between px-5 py-4 border-b border-white/20 bg-white/40">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Campañas del día</span>
                     <span className="text-sm font-bold text-slate-900">{selectedDayPopover.date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                   </div>
-                  <button onClick={() => setSelectedDayPopover(null)} className="p-1 rounded-full hover:bg-slate-200 text-slate-400">
+                  <button onClick={() => setSelectedDayPopover(null)} className="p-1 rounded-full hover:bg-black/5 text-slate-400">
                     <ChevronRight className="w-5 h-5 rotate-90" />
                   </button>
                </div>
@@ -259,18 +289,23 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                       <div 
                         key={c.id} 
                         onClick={() => { onEditCampaign(c); setSelectedDayPopover(null); }}
-                        className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group"
+                        className={`
+                          flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group
+                          ${isCompleted 
+                            ? 'bg-emerald-50/60 hover:bg-emerald-50 text-emerald-800 border-emerald-100/50' 
+                            : 'bg-purple-50/60 hover:bg-purple-50 text-purple-800 border-purple-100/50'}
+                        `}
                       >
                         <div className="flex flex-col flex-1 min-w-0 pr-2">
-                           <span className="text-xs font-bold text-slate-800 truncate">{c.name}</span>
-                           <span className="text-[10px] text-slate-500 truncate">{c.message}</span>
+                           <span className="text-xs font-bold truncate">{c.name}</span>
+                           <span className={`text-[10px] truncate ${isCompleted ? 'text-emerald-600' : 'text-purple-600'}`}>{c.message}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                           <span className="text-[10px] font-bold text-slate-400">{sentNums}/{totalNums}</span>
+                           <span className="text-[10px] font-bold opacity-60">{sentNums}/{totalNums}</span>
                            {isCompleted ? (
                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                            ) : (
-                             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                             <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
                            )}
                         </div>
                       </div>
@@ -278,7 +313,7 @@ export function CalendarModule({ campaigns, onDateSelect, onEditCampaign }) {
                   })}
                </div>
                
-               <div className="p-4 bg-slate-50/50 flex gap-2">
+               <div className="p-4 bg-white/40 flex gap-2">
                   <button onClick={() => { onDateSelect(selectedDayPopover.date); setSelectedDayPopover(null); }} className="flex-1 rounded-xl bg-[#0B1F3A] py-2.5 text-xs font-bold text-white hover:bg-[#0A1A31] transition-all">
                     Añadir campaña
                   </button>
