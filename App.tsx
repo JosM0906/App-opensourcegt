@@ -1655,6 +1655,32 @@ export default function App() {
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredCatalog.map((p) => (
                     <div key={p.id} className="rounded-3xl border border-slate-200 bg-white shadow-sm flex flex-col overflow-hidden">
+                      {/* Imagen del Producto */}
+                      <div className="relative w-full h-40 bg-slate-50 border-b border-slate-100 flex items-center justify-center overflow-hidden">
+                         {p.imageUrl && !p.imageUrl.includes("placehold") && !p.imageUrl.includes("example.com") ? (
+                           <img 
+                             src={p.imageUrl.startsWith('/') ? `${backend}${p.imageUrl}` : p.imageUrl} 
+                             alt={p.name}
+                             className="w-full h-full object-contain"
+                             onError={(e) => {
+                               // Si falla la carga, muestra un icono
+                               (e.currentTarget as HTMLImageElement).style.display = 'none';
+                               e.currentTarget.parentElement?.classList.add('fallback-icon');
+                             }}
+                           />
+                         ) : (
+                           <Package className="h-10 w-10 text-slate-300" />
+                         )}
+                         <style>{`
+                           .fallback-icon::after {
+                             content: '';
+                             position: absolute;
+                             inset: 0;
+                             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>') no-repeat center center;
+                           }
+                         `}</style>
+                      </div>
+                      
                       <div className="p-4 flex-1">
                         
                         {/* Fila 1: Título y Precio */}
@@ -1715,19 +1741,36 @@ export default function App() {
               ) : (
                 <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                   <div className="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
-                    <div className="col-span-5">Producto</div>
+                    <div className="col-span-1 text-center">Img</div>
+                    <div className="col-span-4">Producto</div>
                     <div className="col-span-3">Categoría</div>
                     <div className="col-span-2 text-right">Precio</div>
                     <div className="col-span-2 text-right">Stock</div>
                   </div>
                   <div className="divide-y divide-slate-200">
                     {filteredCatalog.map((p) => (
-                      <div key={p.id} className="grid grid-cols-12 gap-2 px-4 py-3 text-sm">
-                        <div className="col-span-5">
-                          <div className="font-medium text-slate-900">{p.name}</div>
+                      <div key={p.id} className="grid grid-cols-12 gap-2 px-4 py-3 text-sm items-center">
+                        <div className="col-span-1 flex justify-center">
+                          {p.imageUrl && !p.imageUrl.includes("placehold") && !p.imageUrl.includes("example.com") ? (
+                            <div className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center shrink-0">
+                              <img 
+                                src={p.imageUrl.startsWith('/') ? `${backend}${p.imageUrl}` : p.imageUrl} 
+                                alt=""
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0">
+                              <Package className="h-4 w-4 text-slate-300" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="col-span-4">
+                          <div className="font-medium text-slate-900 line-clamp-1">{p.name}</div>
                           <div className="text-xs text-slate-500">{formatProductId(p.id)}</div>
                         </div>
-                        <div className="col-span-3 text-slate-700">{p.category}</div>
+                        <div className="col-span-3 text-slate-700 truncate">{p.category}</div>
                         <div className="col-span-2 text-right font-semibold text-slate-900">Q{Number(p.price).toFixed(2)}</div>
                         <div className="col-span-2 text-right text-slate-700">{p.stock}</div>
                       </div>
