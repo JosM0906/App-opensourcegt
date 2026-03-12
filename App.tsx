@@ -488,8 +488,8 @@ export default function App() {
 
         {/* Título centrado */}
         <div className="mt-5 text-center">
-          <div className="text-2xl font-semibold text-slate-900">OpenSourceGT</div>
-          <div className="text-sm text-slate-600 mt-1">Bienvenido Almacén el Tesoro</div>
+          <div className="text-2xl font-semibold text-slate-900">RDG - Business Solutions</div>
+          <div className="text-sm text-slate-600 mt-1">Bienvenido RDG</div>
         </div>
 
         {/* Card */}

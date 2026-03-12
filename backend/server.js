@@ -643,7 +643,7 @@ async function loadSystemPrompt(forceRead = false) {
   try {
     ensureDataDir();
     if (!fs.existsSync(PROMPT_PATH)) {
-       const defaultPrompt = `Eres un asistente virtual de ventas de ALMACÉN EL TESORO / DKALUMA S.A. Tu objetivo es asesorar a los clientes de forma profesional y amable.`;
+       const defaultPrompt = `Eres un asistente virtual de ventas de RDG. Tu objetivo es asesorar a los clientes de forma profesional y amable.`;
        await fsp.writeFile(PROMPT_PATH, defaultPrompt, "utf-8");
        cachedPrompt = defaultPrompt;
        return defaultPrompt;
