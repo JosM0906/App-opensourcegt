@@ -476,7 +476,7 @@ export default function App() {
         <div className="flex justify-center">
           <div className="h-24 w-24 flex items-center justify-center overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <img 
-              src="/img/logo.png" 
+              src="/rdg.png" 
               alt="Logo"
               className="h-full w-full object-contain p-2"
               onError={(e) => {
@@ -1200,14 +1200,12 @@ export default function App() {
     const CLIENT_NAV = [
     { key: AppTab.METRICS, label: "Métricas", icon: LayoutDashboard },
     { key: AppTab.AI_STUDIO, label: "AI Studio", icon: Bot },
-    { key: AppTab.CATALOG, label: "Catálogo", icon: Package },
     { key: AppTab.CAMPAIGN_CALENDAR, label: "Calendario", icon: CalendarDays },
     { key: AppTab.MASS_MESSAGES, label: "Mensajes masivos", icon: Megaphone },
   ] as const;
 
   const ADMIN_NAV = [
     { key: AppTab.METRICS, label: "Métricas", icon: LayoutDashboard },
-    { key: AppTab.CATALOG, label: "Catálogo", icon: Package },
     { key: AppTab.LOGS, label: "Logs", icon: ScrollText },
     { key: AppTab.SHEETS, label: "Sheet bridge", icon: Link2 },
     { key: AppTab.AI_STUDIO, label: "AI Studio", icon: Bot }, // Unified
@@ -1279,9 +1277,9 @@ export default function App() {
             <div className="p-4 border-b border-slate-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src="/img/logo.png" alt="Logo" className="h-8 w-8 object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
+                  <img src="/rdg.png" alt="Logo" className="h-8 w-8 object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
                   <div>
-                    <div className="text-sm font-semibold text-slate-900">OpenSourceGT</div>
+                    <div className="text-sm font-semibold text-slate-900">RDG - Business Solutions</div>
                     <div className="text-xs text-slate-500">{role === "admin" ? "Panel administrativo" : "Panel cliente"}</div>
                   </div>
                 </div>
@@ -1562,224 +1560,6 @@ export default function App() {
             </>
           )}
 
-          {/* CATALOG */}
-          {activeTab === AppTab.CATALOG && (
-            <>
-              <PageHeader
-                title="Catálogo"
-                subtitle="Historial de productos disponibles. Puedes verlos por tarjetas o listado."
-                actions={
-                  <>
-                  <div className="flex flex-wrap w-full items-center gap-2 pb-2 md:w-auto md:pb-0">
-                    <div className="relative shrink-0 flex-1 min-w-[140px]">
-                      <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <input
-                        value={catalogQuery}
-                        onChange={(e) => setCatalogQuery(e.target.value)}
-                        placeholder="Buscar producto…"
-                        className="w-full rounded-2xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-slate-400"
-                      />
-                    </div>
-                    <button
-                      onClick={loadCatalog}
-                      disabled={catalogLoading}
-                      className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-                      title="Recargar catálogo"
-                    >
-                      <RefreshCcw className={classNames("h-4 w-4", catalogLoading ? "animate-spin" : "")} />
-                    </button>
-
-                    <button
-                      onClick={() => setCatalogView((v) => (v === "cards" ? "list" : "cards"))}
-                      className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                      title={catalogView === "cards" ? "Ver Lista" : "Ver Tarjetas"}
-                    >
-                      {catalogView === "cards" ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-                    </button>
-
-                    <button
-                      onClick={openNewProduct}
-                      className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-[#0B1F3A] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0A1A31]"
-                    >
-                      <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Nuevo</span>
-                    </button>
-                    
-                    <div className="w-full sm:w-auto flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200">
-                      <input
-                        ref={fileRef}
-                        type="file"
-                        accept="application/pdf"
-                        style={{ display: "none" }}
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) uploadCatalogPdf(f);
-                          e.currentTarget.value = ""; 
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Carpeta (ej: 2024)"
-                        value={catalogFolder}
-                        onChange={(e) => setCatalogFolder(e.target.value)}
-                        className="flex-1 min-w-[120px] rounded-2xl border border-slate-200 bg-white py-2 px-3 text-sm outline-none focus:border-slate-400"
-                      />
-                      <button
-                        onClick={() => {
-                          if (!catalogFolder.trim()) {
-                            alert("Ingresa la carpeta.");
-                            return;
-                          }
-                          fileRef.current?.click();
-                        }}
-                        disabled={uploading}
-                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-                      >
-                         <UploadCloud className="h-4 w-4" />
-                         <span className="text-xs sm:text-sm">{uploading ? "..." : "Subir PDF"}</span>
-                      </button>
-                    </div>
-                  </div>
-                  </>
-                }
-              />
-
-              {catalogLoading && <div style={{ padding: 12, opacity: 0.8 }}>Cargando catálogo…</div>}
-
-              {catalogError && (
-                <div style={{ padding: 12, color: "#b00020" }}>
-                  {catalogError}
-                </div>
-              )}
-
-              {catalogView === "cards" ? (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {filteredCatalog.map((p) => (
-                    <div key={p.id} className="rounded-3xl border border-slate-200 bg-white shadow-sm flex flex-col overflow-hidden">
-                      {/* Imagen del Producto */}
-                      <div className="relative w-full h-40 bg-slate-50 border-b border-slate-100 flex items-center justify-center overflow-hidden">
-                         {p.imageUrl && !p.imageUrl.includes("placehold") && !p.imageUrl.includes("example.com") ? (
-                           <img 
-                             src={p.imageUrl.startsWith('/') ? `${backend}${p.imageUrl}` : p.imageUrl} 
-                             alt={p.name}
-                             className="w-full h-full object-contain"
-                             onError={(e) => {
-                               // Si falla la carga, muestra un icono
-                               (e.currentTarget as HTMLImageElement).style.display = 'none';
-                               e.currentTarget.parentElement?.classList.add('fallback-icon');
-                             }}
-                           />
-                         ) : (
-                           <Package className="h-10 w-10 text-slate-300" />
-                         )}
-                         <style>{`
-                           .fallback-icon::after {
-                             content: '';
-                             position: absolute;
-                             inset: 0;
-                             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>') no-repeat center center;
-                           }
-                         `}</style>
-                      </div>
-                      
-                      <div className="p-4 flex-1">
-                        
-                        {/* Fila 1: Título y Precio */}
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="text-[15px] font-bold text-slate-900 leading-tight flex-1">
-                            {p.name}
-                          </div>
-                          <div className="text-[15px] font-bold text-slate-900 shrink-0">
-                            Q{Number(p.price).toFixed(2)}
-                          </div>
-                        </div>
-
-                        {/* Fila 2: Categoría, ID y Botón Editar */}
-                        <div className="flex items-start justify-between gap-3 mb-4">
-                           <div className="text-[13px] text-slate-500 leading-snug">
-                             {p.category} - <span className="font-mono">{p.id}</span>
-                           </div>
-                           <button 
-                             onClick={() => openEditProduct(p)}
-                             className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors shrink-0 mt-1"
-                             title="Editar"
-                           >
-                              <Edit2 className="h-4 w-4" />
-                           </button>
-                        </div>
-
-                        {/* Fila 3: Stock */}
-                        <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5 mb-2">
-                          <div className="text-[13px] font-medium text-slate-500">Stock Disponible</div>
-                          <div className="text-[14px] font-bold text-slate-900">{p.stock}</div>
-                        </div>
-
-                      </div>
-                      
-                      {/* Fila 4: Botones (Copiar y WhatsApp) */}
-                      <div className="px-4 pb-4 flex gap-3">
-                        <button
-                          onClick={() => navigator.clipboard.writeText(`${p.name} - Q${Number(p.price).toFixed(2)}`)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-3 text-[14px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
-                          title="Copiar información"
-                        >
-                          Copiar
-                        </button>
-                         <button
-                           onClick={() => {
-                             setProductToSend(p);
-                             setSendModalOpen(true);
-                           }}
-                           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#0F2035] px-2 py-3 text-[14px] font-semibold text-white hover:bg-[#0A1A31] transition-colors shadow-sm"
-                         >
-                           <WhatsAppIcon className="h-5 w-5 shrink-0 text-emerald-400" /> 
-                           <span>Enviar</span>
-                         </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <div className="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
-                    <div className="col-span-1 text-center">Img</div>
-                    <div className="col-span-4">Producto</div>
-                    <div className="col-span-3">Categoría</div>
-                    <div className="col-span-2 text-right">Precio</div>
-                    <div className="col-span-2 text-right">Stock</div>
-                  </div>
-                  <div className="divide-y divide-slate-200">
-                    {filteredCatalog.map((p) => (
-                      <div key={p.id} className="grid grid-cols-12 gap-2 px-4 py-3 text-sm items-center">
-                        <div className="col-span-1 flex justify-center">
-                          {p.imageUrl && !p.imageUrl.includes("placehold") && !p.imageUrl.includes("example.com") ? (
-                            <div className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center shrink-0">
-                              <img 
-                                src={p.imageUrl.startsWith('/') ? `${backend}${p.imageUrl}` : p.imageUrl} 
-                                alt=""
-                                className="w-full h-full object-cover"
-                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0">
-                              <Package className="h-4 w-4 text-slate-300" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="col-span-4">
-                          <div className="font-medium text-slate-900 line-clamp-1">{p.name}</div>
-                          <div className="text-xs text-slate-500">{formatProductId(p.id)}</div>
-                        </div>
-                        <div className="col-span-3 text-slate-700 truncate">{p.category}</div>
-                        <div className="col-span-2 text-right font-semibold text-slate-900">Q{Number(p.price).toFixed(2)}</div>
-                        <div className="col-span-2 text-right text-slate-700">{p.stock}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
 
           {/* LOGS */}
           {activeTab === AppTab.LOGS && (
