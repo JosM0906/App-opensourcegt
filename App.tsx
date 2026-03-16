@@ -476,7 +476,7 @@ export default function App() {
         <div className="flex justify-center">
           <div className="h-24 w-24 flex items-center justify-center overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <img 
-              src="/rdg.png" 
+              src="/img/rdg.png" 
               alt="Logo"
               className="h-full w-full object-contain p-2"
               onError={(e) => {
@@ -488,7 +488,7 @@ export default function App() {
 
         {/* Título centrado */}
         <div className="mt-5 text-center">
-          <div className="text-2xl font-semibold text-slate-900">RDG - Business Solutions</div>
+          <div className="text-2xl font-semibold text-slate-900">Reserva Digital Guatemalteca</div>
           <div className="text-sm text-slate-600 mt-1">Bienvenido RDG</div>
         </div>
 
@@ -1248,8 +1248,8 @@ export default function App() {
             Menú
           </button>
           <div className="flex items-center gap-2">
-            <img src="/img/logo.png" alt="Logo" className="h-6 w-auto object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
-            <div className="text-sm font-semibold text-slate-900">OpenSourceGT</div>
+            <img src="/img/rdg.png" alt="Logo" className="h-6 w-auto object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
+            <div className="text-sm font-semibold text-slate-900">Reserva Digital Guatemalteca</div>
           </div>
         </div>
       </div>
@@ -1277,9 +1277,9 @@ export default function App() {
             <div className="p-4 border-b border-slate-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src="/rdg.png" alt="Logo" className="h-8 w-8 object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
+                  <img src="/img/rdg.png" alt="Logo" className="h-8 w-8 object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
                   <div>
-                    <div className="text-sm font-semibold text-slate-900">RDG - Business Solutions</div>
+                    <div className="text-sm font-semibold text-slate-900">Reserva Digital Guatemalteca</div>
                     <div className="text-xs text-slate-500">{role === "admin" ? "Panel administrativo" : "Panel cliente"}</div>
                   </div>
                 </div>
@@ -1571,7 +1571,9 @@ export default function App() {
 
           {/* SHEETS */}
           {activeTab === AppTab.SHEETS && (
-            <SheetsModule backend={backend} backendOk={backendOk} />
+            <Card title="Modulo de Sheets" subtitle="Proximamente...">
+              <div className="text-sm text-slate-500">Esta funcionalidad estará disponible pronto.</div>
+            </Card>
           )}
 
 

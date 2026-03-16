@@ -12,6 +12,7 @@ import multer from "multer";
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
 import { parsePdfPages, extractItemsRegex } from "./utils/pdfCatalog.js";
+import axios from "axios";
 
 // ============================
 // PDF PARSE (CommonJS)
@@ -98,11 +99,26 @@ const storageDisk = multer.diskStorage({
 const uploadDisk = multer({ storage: storageDisk });
 
 // ============================
-//  __dirname + ENV
+//  __dirname + ENV + Identity
 // ============================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, ".env") });
+
+// Load branch-specific identity (tracked by Git)
+const IDENTITY_PATH = path.join(__dirname, "client-identity.json");
+let identity = {};
+if (fs.existsSync(IDENTITY_PATH)) {
+  try {
+    identity = JSON.parse(fs.readFileSync(IDENTITY_PATH, "utf-8"));
+    console.log("[Identity] Loaded branch-specific config:", IDENTITY_PATH);
+  } catch (e) {
+    console.error("[Identity] Error parsing client-identity.json:", e);
+  }
+}
+
+// Override or fallback for process.env
+const getEnv = (key) => identity[key] || process.env[key];
 
 // ============================
 //  APP
@@ -680,30 +696,26 @@ app.post("/admin/prompt", async (req, res) => {
 
 app.post("/admin/prompt/sync", async (req, res) => {
   try {
-    const assistantId = process.env.BUILDERBOT_ASSISTANT_ID;
-    if (!assistantId) return res.status(400).json({ error: "Falta BUILDERBOT_ASSISTANT_ID en .env" });
+    const assistantId = getEnv("BUILDERBOT_ASSISTANT_ID");
+    if (!assistantId) return res.status(400).json({ error: "Falta BUILDERBOT_ASSISTANT_ID en .env o client-identity.json" });
 
-    // Use hardcoded projectId since getting it from env is complex and error prone for this quick fix
-    const projectId = "ccffa427-dba4-4b14-a64f-3c1cc08e8fef"; 
+    // Extract projectId from broadcast URL if available, else use fallback
+    const broadcastUrl = getEnv("BUILDERBOT_BROADCAST_URL") || "";
+    const urlMatch = broadcastUrl.match(/\/api\/v2\/([^\/]+)\/messages/);
+    const projectId = urlMatch ? urlMatch[1] : "ccffa427-dba4-4b14-a64f-3c1cc08e8fef";
     
     const url = `https://app.builderbot.cloud/api/v2/${projectId}/answer/${assistantId}/plugin/assistant`;
     console.log("[Sync] Fetching from:", url);
 
-    const resp = await fetch(url, {
+    const resp = await axios.get(url, {
         headers: {
-            "x-api-builderbot": process.env.BUILDERBOT_API_KEY
-        }
+            "x-api-builderbot": getEnv("BUILDERBOT_API_KEY")
+        },
+        timeout: 15000 // 15s timeout
     });
 
-    if (!resp.ok) {
-        const txt = await resp.text();
-        console.error("[Sync] Error:", txt);
-        return res.status(resp.status).json({ error: "BuilderBot API Error: " + txt });
-    }
-
-    const data = await resp.json();
-    // Verify JSON structure from curl output: {"data":{"instructions":"..."}}
-    const instructions = data?.data?.instructions;
+    // Axios returns data directly
+    const instructions = resp.data?.data?.instructions;
 
     if (!instructions) {
         return res.status(400).json({ error: "No se encontraron instrucciones en la respuesta de BuilderBot" });

@@ -9,8 +9,12 @@ const { Pool } = pg;
 // or require DATABASE_URL to be set in .env
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Para conexiones externas (como Neon o Supabase) a veces se requiere ssl:
   ssl: process.env.NODE_ENV === 'production' && process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
+
+// Prevent unhandled errors from crashing the process
+pool.on('error', (err) => {
+  console.error('[Pool Error] Unexpected error on idle client:', err);
 });
 
 export const query = (text, params) => pool.query(text, params);
